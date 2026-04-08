@@ -1,26 +1,121 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: hsl(40 25% 96%);
+  --foreground: hsl(24 8% 11%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(24 8% 11%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(24 8% 11%);
+  --primary: hsl(24 6% 11%);
+  --primary-foreground: hsl(38 30% 95%);
+  --secondary: hsl(36 18% 91%);
+  --secondary-foreground: hsl(24 8% 18%);
+  --muted: hsl(35 12% 92%);
+  --muted-foreground: hsl(25 8% 46%);
+  --accent: hsl(28 22% 88%);
+  --accent-foreground: hsl(24 8% 12%);
+  --destructive: hsl(5 55% 42%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(34 12% 87%);
+  --input: hsl(34 12% 87%);
+  --ring: hsl(24 6% 11%);
+  --radius: 0.5rem;
+
+  --chart-1: hsl(24 70% 48%);
+  --chart-2: hsl(140 22% 42%);
+  --chart-3: hsl(36 68% 46%);
+  --chart-4: hsl(358 48% 42%);
+  --chart-5: hsl(200 28% 44%);
+
+  /* Cores semânticas de meta — âmbar progressivo, nunca vermelho */
+  --meta-abaixo:    hsl(20 65% 52%);
+  --meta-aceitavel: hsl(40 82% 56%);
+  --meta-ideal:     hsl(38 70% 50%);
+  --meta-super:     hsl(36 55% 45%);
+  --meta-batida:    hsl(140 28% 40%);
+
+  /* Canais de lead */
+  --canal-impulsionar: hsl(210 65% 52%);
+  --canal-remartik:    hsl(258 55% 58%);
+  --canal-trafego:     hsl(36  55% 45%);
+  --canal-fc:          hsl(142 45% 42%);
+  --canal-link:        hsl(20  60% 52%);
+  --canal-fabrica:     hsl(190 50% 45%);
+
+  --sidebar: hsl(38 25% 97%);
+  --sidebar-foreground: hsl(30 15% 20%);
+  --sidebar-primary: hsl(24 6% 11%);
+  --sidebar-primary-foreground: hsl(38 30% 95%);
+  --sidebar-accent: hsl(34 18% 87%);
+  --sidebar-accent-foreground: hsl(24 8% 14%);
+  --sidebar-border: hsl(36 20% 88%);
+  --sidebar-ring: hsl(38 30% 65%);
+
+  /* Sidebar — estados ativos e hover */
+  --sidebar-active-bg:     hsl(36 45% 92%);
+  --sidebar-active-fg:     hsl(30 20% 15%);
+  --sidebar-active-border: hsl(36 55% 45%);
+  --sidebar-hover-bg:      hsl(36 20% 93%);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-manrope);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*,
+*::before,
+*::after {
+  border-color: var(--border);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
