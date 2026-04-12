@@ -9,7 +9,7 @@ import { temPermissao } from "@/lib/permissions"
 import type { PapelUsuario } from "@/lib/enums"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, DollarSign, RefreshCw, BarChart3 } from "lucide-react"
+import { Calendar, DollarSign, RefreshCw, BarChart3, TrendingUp, BarChart2 } from "lucide-react"
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -129,20 +129,22 @@ export default async function IndicadorComercialPage({
       {/* Ticket médio */}
       <div className="grid grid-cols-2 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Ticket Médio Novos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(ticketNovos)}</p>
+          <CardContent className="pt-5 px-5 pb-5">
+            <div className="flex items-start justify-between">
+              <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">Ticket Médio Novos</p>
+              <TrendingUp className="h-4 w-4 shrink-0 text-amber-500" />
+            </div>
+            <p className="text-3xl font-bold mt-2">{ticketNovos > 0 ? formatCurrency(ticketNovos) : "—"}</p>
             <p className="text-xs text-muted-foreground mt-1">Mês anterior: {formatCurrency(ticketNovosAnt)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Ticket Médio Recorrência</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(ticketRec)}</p>
+          <CardContent className="pt-5 px-5 pb-5">
+            <div className="flex items-start justify-between">
+              <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">Ticket Médio Recorrência</p>
+              <BarChart2 className="h-4 w-4 shrink-0 text-purple-500" />
+            </div>
+            <p className="text-3xl font-bold mt-2">{ticketRec > 0 ? formatCurrency(ticketRec) : "—"}</p>
             <p className="text-xs text-muted-foreground mt-1">Mês anterior: {formatCurrency(ticketRecAnt)}</p>
           </CardContent>
         </Card>
