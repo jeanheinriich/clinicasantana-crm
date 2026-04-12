@@ -44,6 +44,13 @@
   --canal-fc:          hsl(142 45% 42%);
   --canal-link:        hsl(20  60% 52%);
   --canal-fabrica:     hsl(190 50% 45%);
+  --canal-turbinar:    hsl(180 35% 42%);
+  --canal-outro:       hsl(25   8% 50%);
+
+  /* Estado de conexão/sucesso */
+  --status-ok:         hsl(140 28% 40%);
+  --status-ok-bg:      hsl(140 40% 96%);
+  --status-ok-border:  hsl(140 30% 78%);
 
   --sidebar: hsl(38 25% 97%);
   --sidebar-foreground: hsl(30 15% 20%);
