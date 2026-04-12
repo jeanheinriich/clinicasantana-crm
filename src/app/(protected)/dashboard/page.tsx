@@ -7,10 +7,24 @@ import { ConsultasCard } from "@/components/dashboard/consultas-card"
 import { AgendamentosCard } from "@/components/dashboard/agendamentos-card"
 import { TicketMedioSection } from "@/components/dashboard/ticket-medio-section"
 import { FunilSection } from "@/components/dashboard/funil-section"
+import { FaturamentoLineChart } from "@/components/dashboard/faturamento-line-chart"
+import { LeadsBarChart } from "@/components/dashboard/leads-bar-chart"
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+]
+const MESES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+
+const CANAIS = [
+  { value: "IMPULSIONAR",       label: "Impulsionar" },
+  { value: "REMARTIK",          label: "Remartik"    },
+  { value: "TRAFEGO",           label: "Tráfego"     },
+  { value: "FC",                label: "FC"          },
+  { value: "LINK",              label: "Link"        },
+  { value: "FABRICA_INSTAGRAM", label: "Fáb. Inst."  },
+  { value: "TURBINAR",          label: "Turbinar"    },
+  { value: "OUTRO",             label: "Outro"       },
 ]
 
 interface SearchParams { mes?: string; ano?: string }
@@ -28,17 +42,38 @@ export default async function DashboardPage({
   const mes = parseInt(params.mes ?? String(hoje.getMonth() + 1))
   const ano = parseInt(params.ano ?? String(hoje.getFullYear()))
 
-  const [metaFinanceira, consultasAggregate, indicadorComercial, indicadorConversao] =
-    await Promise.all([
-      prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
-      prisma.consulta.aggregate({
-        where: { mes, ano, status: "REALIZADA" },
-        _sum: { valor: true },
-        _count: true,
-      }),
-      prisma.indicadorComercial.findUnique({ where: { mes_ano: { mes, ano } } }),
-      prisma.indicadorConversao.findUnique({ where: { mes_ano: { mes, ano } } }),
-    ])
+  const [
+    metaFinanceira,
+    consultasAggregate,
+    indicadorComercial,
+    indicadorConversao,
+    realizadosPorMes,
+    leadsPorCanalRaw,
+  ] = await Promise.all([
+    prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
+    prisma.consulta.aggregate({
+      where: { mes, ano, status: "REALIZADA" },
+      _sum: { valor: true },
+      _count: true,
+    }),
+    prisma.indicadorComercial.findUnique({ where: { mes_ano: { mes, ano } } }),
+    prisma.indicadorConversao.findUnique({ where: { mes_ano: { mes, ano } } }),
+    prisma.consulta.groupBy({
+      by: ["mes"],
+      where: { ano, status: "REALIZADA" },
+      _sum: { valor: true },
+    }),
+    prisma.lead.groupBy({
+      by: ["canal"],
+      where: {
+        dataCriacao: {
+          gte: new Date(ano, mes - 1, 1),
+          lt:  new Date(ano, mes,     1),
+        },
+      },
+      _count: { _all: true },
+    }),
+  ])
 
   const realizado = Number(consultasAggregate._sum.valor ?? 0)
   const isMesAtual = mes === hoje.getMonth() + 1 && ano === hoje.getFullYear()
@@ -53,6 +88,21 @@ export default async function DashboardPage({
   const consultasAgendadasCount = indicadorConversao?.consultasAgendadas ?? 0
   const consultasRealizadasCount = indicadorConversao?.consultasRealizadas ?? consultasAggregate._count
   const totalQtdConsultas = novosQtd + recorrenciaQtd || consultasAggregate._count
+
+  // Gráfico de área: Jan → mês selecionado
+  const faturamentoMeses = Array.from({ length: mes }, (_, i) => {
+    const m = i + 1
+    const val = realizadosPorMes.find((r) => r.mes === m)?._sum.valor
+    return { mes: MESES_ABREV[i], realizado: val ? Number(val) : null }
+  })
+
+  // Gráfico de barras: somente canais com leads
+  const leadsPorCanalData = CANAIS
+    .map(({ value, label }) => ({
+      canal: label,
+      quantidade: leadsPorCanalRaw.find((l) => l.canal === value)?._count._all ?? 0,
+    }))
+    .filter((item) => item.quantidade > 0)
 
   return (
     <div className="space-y-6">
@@ -153,6 +203,12 @@ export default async function DashboardPage({
           </p>
         </div>
       )}
+
+      {/* Row 4: Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <FaturamentoLineChart data={faturamentoMeses} />
+        <LeadsBarChart data={leadsPorCanalData} />
+      </div>
     </div>
   )
 }

@@ -18,14 +18,14 @@ interface FunilSectionProps {
 }
 
 function taxaColor(taxa: number, limiar: number): string {
-  return taxa >= limiar ? "hsl(var(--meta-batida))" : "hsl(var(--meta-abaixo))"
+  return taxa >= limiar ? "var(--meta-batida)" : "var(--meta-abaixo)"
 }
 
 function metaProgressColor(pct: number): string {
-  if (pct >= 100) return "hsl(var(--meta-batida))"
-  if (pct >= 86)  return "hsl(var(--meta-ideal))"
-  if (pct >= 75)  return "hsl(var(--meta-aceitavel))"
-  return "hsl(var(--meta-abaixo))"
+  if (pct >= 100) return "var(--meta-batida)"
+  if (pct >= 86)  return "var(--meta-ideal)"
+  if (pct >= 75)  return "var(--meta-aceitavel)"
+  return "var(--meta-abaixo)"
 }
 
 export function FunilSection({
@@ -63,7 +63,7 @@ export function FunilSection({
           <CardContent className="pt-5 px-5 pb-5">
             <div className="flex items-start justify-between">
               <p className="text-sm text-muted-foreground">Leads Recebidos</p>
-              <Users className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--canal-impulsionar))" }} />
+              <Users className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--canal-impulsionar)" }} />
             </div>
             <p className="text-3xl font-bold mt-2">{totalLeads}</p>
             <p className="text-xs text-muted-foreground mt-0.5">leads no mês</p>

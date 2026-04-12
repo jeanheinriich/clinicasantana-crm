@@ -27,29 +27,29 @@ function getStatus(
 ): StatusInfo {
   if (realizado >= superMeta) return {
     badgeText: "Super Meta",
-    barColor: "hsl(var(--meta-batida))",
-    textColor: "hsl(var(--meta-batida))",
+    barColor: "var(--meta-batida)",
+    textColor: "var(--meta-batida)",
     refLabel: "Super Meta",
     refValor: superMeta,
   }
   if (realizado >= metaIdeal) return {
     badgeText: "Meta Ideal",
-    barColor: "hsl(var(--meta-ideal))",
-    textColor: "hsl(var(--meta-ideal))",
+    barColor: "var(--meta-ideal)",
+    textColor: "var(--meta-ideal)",
     refLabel: "Super Meta",
     refValor: superMeta,
   }
   if (realizado >= metaAceitavel) return {
     badgeText: "Meta Aceitável",
-    barColor: "hsl(var(--meta-aceitavel))",
-    textColor: "hsl(var(--meta-aceitavel))",
+    barColor: "var(--meta-aceitavel)",
+    textColor: "var(--meta-aceitavel)",
     refLabel: "Meta Ideal",
     refValor: metaIdeal,
   }
   return {
     badgeText: "Abaixo da Meta",
-    barColor: "hsl(var(--meta-abaixo))",
-    textColor: "hsl(var(--meta-abaixo))",
+    barColor: "var(--meta-abaixo)",
+    textColor: "var(--meta-abaixo)",
     refLabel: "Meta Aceitável",
     refValor: metaAceitavel,
   }

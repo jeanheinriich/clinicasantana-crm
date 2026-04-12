@@ -26,8 +26,8 @@ export function ConsultasCard({ realizadas, agendadas }: ConsultasCardProps) {
           className="text-sm font-semibold mt-3"
           style={{
             color: atingiu
-              ? "hsl(var(--meta-batida))"
-              : "hsl(var(--meta-abaixo))",
+              ? "var(--meta-batida)"
+              : "var(--meta-abaixo)",
           }}
         >
           {agendadas > 0 ? `${pct.toFixed(1)}% de realização` : "Sem agendamentos registrados"}
