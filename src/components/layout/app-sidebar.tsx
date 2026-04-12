@@ -86,8 +86,8 @@ export function AppSidebar({ papel, nomeUsuario }: AppSidebarProps) {
                     tooltip={item.label}
                     className={
                       isActive
-                        ? "border-l-2 border-[hsl(var(--sidebar-active-border))] bg-[hsl(var(--sidebar-active-bg))] text-[hsl(var(--sidebar-active-fg))] rounded-l-none pl-[calc(0.5rem-2px)]"
-                        : "hover:bg-[hsl(var(--sidebar-hover-bg))]"
+                        ? "border-l-2 border-[hsl(36,55%,45%)] bg-[hsl(36,45%,92%)] text-[hsl(30,20%,15%)] font-medium rounded-l-none pl-[calc(0.5rem-2px)]"
+                        : "border-l-2 border-transparent text-[hsl(30,10%,45%)] hover:bg-[hsl(36,20%,93%)] hover:text-[hsl(30,15%,20%)] transition-colors duration-150"
                     }
                   >
                     <Link href={item.href}>
