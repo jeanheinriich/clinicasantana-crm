@@ -86,9 +86,18 @@ export default async function MetasPage() {
           const isMesAtual = mes === mesSelecionado
 
           return (
-            <Card key={mes} className={isMesAtual ? "ring-2 ring-[hsl(var(--sidebar-active-border))]/40" : ""}>
+            <Card
+              key={mes}
+              className={
+                isMesAtual
+                  ? "ring-2 ring-[hsl(36,55%,45%)]/40"
+                  : !meta
+                  ? "border border-dashed"
+                  : ""
+              }
+            >
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center justify-between">
+                <CardTitle className="text-base font-semibold flex items-center justify-between">
                   {nomeMes}
                   {isMesAtual && (
                     <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(36,45%,92%)] text-[hsl(30,20%,20%)]">
@@ -100,9 +109,9 @@ export default async function MetasPage() {
               <CardContent className="space-y-2">
                 {meta ? (
                   <>
-                    <div className="flex justify-between text-sm">
-                      <span className="font-semibold">{formatCurrency(realizado)}</span>
-                      <span className="text-muted-foreground">{percentual.toFixed(0)}%</span>
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-xl font-bold">{formatCurrency(realizado)}</span>
+                      <span className="text-sm font-semibold text-[hsl(30,15%,40%)]">{percentual.toFixed(0)}%</span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                       <div
