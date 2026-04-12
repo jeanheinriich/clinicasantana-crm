@@ -35,11 +35,11 @@ export default async function MetasPage() {
     }),
   ])
 
-  function metaBarColor(realizado: number, metaAceitavel: number, metaIdeal: number, superMeta: number): string {
-    if (realizado >= superMeta)    return "hsl(var(--meta-batida))"
-    if (realizado >= metaIdeal)    return "hsl(var(--meta-ideal))"
-    if (realizado >= metaAceitavel) return "hsl(var(--meta-aceitavel))"
-    return "hsl(var(--meta-abaixo))"
+  function getProgressColor(ratio: number): string {
+    if (ratio >= 1.0)  return "hsl(36, 55%, 45%)"
+    if (ratio >= 0.87) return "hsl(38, 70%, 52%)"
+    if (ratio >= 0.75) return "hsl(40, 85%, 58%)"
+    return "hsl(20, 65%, 52%)"
   }
 
   const dadosMensais = Array.from({ length: 12 }, (_, i) => {
@@ -91,7 +91,9 @@ export default async function MetasPage() {
                 <CardTitle className="text-sm flex items-center justify-between">
                   {nomeMes}
                   {isMesAtual && (
-                    <span className="text-xs font-normal" style={{ color: "hsl(var(--sidebar-active-border))" }}>Mês atual</span>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[hsl(36,45%,92%)] text-[hsl(30,20%,20%)]">
+                      Mês atual
+                    </span>
                   )}
                 </CardTitle>
               </CardHeader>
@@ -107,11 +109,8 @@ export default async function MetasPage() {
                         className="h-full rounded-full transition-all"
                         style={{
                           width: `${percentual}%`,
-                          backgroundColor: metaBarColor(
-                            realizado,
-                            Number(meta.metaAceitavel),
-                            Number(meta.metaIdeal),
-                            Number(meta.superMeta),
+                          backgroundColor: getProgressColor(
+                            realizado / Number(meta.metaAceitavel),
                           ),
                         }}
                       />
@@ -139,7 +138,7 @@ export default async function MetasPage() {
                         metaIdeal: Number(meta.metaIdeal),
                         superMeta: Number(meta.superMeta),
                       }}>
-                        <button className="text-xs text-muted-foreground hover:text-foreground underline">
+                        <button className="text-xs text-[hsl(36,55%,45%)] hover:underline">
                           Editar meta
                         </button>
                       </MetaFinanceiraForm>
@@ -150,7 +149,7 @@ export default async function MetasPage() {
                     <p>Sem meta configurada</p>
                     {podeEditar && (
                       <MetaFinanceiraForm mes={mes} ano={ano} metaAtual={null}>
-                        <button className="text-xs text-primary underline mt-1">
+                        <button className="text-xs text-[hsl(36,55%,45%)] font-medium hover:underline mt-1">
                           + Configurar
                         </button>
                       </MetaFinanceiraForm>
