@@ -146,16 +146,16 @@ export default async function LeadsPage({
       </form>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-hidden">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Canal</TableHead>
-              <TableHead>WhatsApp</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Atendente</TableHead>
-              <TableHead>Última Interação</TableHead>
+          <TableHeader className="bg-muted/60">
+            <TableRow className="hover:bg-muted/60">
+              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Nome</TableHead>
+              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Canal</TableHead>
+              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">WhatsApp</TableHead>
+              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Status</TableHead>
+              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Atendente</TableHead>
+              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Última Interação</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -168,7 +168,7 @@ export default async function LeadsPage({
               </TableRow>
             )}
             {leads.map((lead) => (
-              <TableRow key={lead.id}>
+              <TableRow key={lead.id} className="hover:bg-accent/50 transition-colors">
                 <TableCell className="font-medium">{lead.nome}</TableCell>
                 <TableCell>
                   <CanalBadge canal={lead.canal} />
