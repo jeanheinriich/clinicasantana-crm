@@ -7,6 +7,7 @@ import { temPermissao } from "@/lib/permissions"
 import type { PapelUsuario } from "@/lib/enums"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Users, Calendar, CheckSquare } from "lucide-react"
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -14,6 +15,13 @@ const MESES = [
 ]
 
 interface SearchParams { mes?: string; ano?: string }
+
+function getBarColor(taxa: number): string {
+  if (taxa >= 0.20) return "hsl(142, 45%, 42%)"
+  if (taxa >= 0.15) return "hsl(36,  55%, 45%)"
+  if (taxa >= 0.10) return "hsl(38,  70%, 52%)"
+  return "hsl(20, 65%, 52%)"
+}
 
 export default async function IndicadorConversaoPage({
   searchParams,
@@ -40,14 +48,33 @@ export default async function IndicadorConversaoPage({
     }),
   ])
 
-  const taxaConversao = indicador && indicador.totalLeads > 0
-    ? ((indicador.consultasRealizadas / indicador.totalLeads) * 100).toFixed(1)
-    : "0.0"
+  const totalLeads       = indicador?.totalLeads ?? 0
+  const agendadas        = indicador?.consultasAgendadas ?? 0
+  const realizadas       = indicador?.consultasRealizadas ?? 0
+  const taxaFrac         = totalLeads > 0 ? realizadas / totalLeads : 0
+  const taxaConversao    = totalLeads > 0 ? (taxaFrac * 100).toFixed(1) : "0.0"
+  const taxaColor        = parseFloat(taxaConversao) >= 10 ? "hsl(36, 55%, 45%)" : "hsl(20, 65%, 52%)"
 
   const anosDisponiveis = Array.from({ length: 5 }, (_, i) => hoje.getFullYear() - 2 + i)
 
+  const canais = [
+    { nome: "TRAFEGO",           label: "Tráfego",        leads: indicador?.leadsTrafego ?? 0,     cor: "bg-amber-400",  text: "text-amber-700"  },
+    { nome: "IMPULSIONAR",       label: "Impulsionar",    leads: indicador?.leadsImpulsionar ?? 0, cor: "bg-blue-400",   text: "text-blue-700"   },
+    { nome: "REMARTIK",          label: "Remartik",       leads: indicador?.leadsRemartik ?? 0,    cor: "bg-purple-400", text: "text-purple-700" },
+    { nome: "FC",                label: "FC",             leads: indicador?.leadsFC ?? 0,          cor: "bg-green-400",  text: "text-green-700"  },
+    { nome: "LINK",              label: "Link",           leads: indicador?.leadsLink ?? 0,        cor: "bg-orange-400", text: "text-orange-700" },
+    { nome: "FABRICA_INSTAGRAM", label: "Fáb. Instagram", leads: indicador?.leadsFabrica ?? 0,     cor: "bg-teal-400",   text: "text-teal-700"   },
+  ]
+
+  const funelSteps = [
+    { Icon: Users,       label: "Leads Recebidos",      valor: totalLeads, iconColor: "text-blue-500"  },
+    { Icon: Calendar,    label: "Consultas Agendadas",   valor: agendadas,  iconColor: "text-amber-500" },
+    { Icon: CheckSquare, label: "Consultas Realizadas",  valor: realizadas, iconColor: "text-green-500" },
+  ]
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Indicadores de Conversão</h2>
@@ -78,76 +105,95 @@ export default async function IndicadorConversaoPage({
         </form>
       </div>
 
-      {/* Taxa de conversão destaque */}
+      {/* Card principal — Taxa + Funil + Canais */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">Taxa de Conversão — {MESES[mes - 1]}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-end gap-6">
-          <div>
-            <p
-              className="text-5xl font-bold"
-              style={{ color: parseFloat(taxaConversao) >= 10 ? "hsl(36, 55%, 45%)" : "hsl(20, 65%, 52%)" }}
-            >
-              {taxaConversao}%
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              {indicador?.consultasRealizadas ?? 0} realizadas / {indicador?.totalLeads ?? 0} leads
-            </p>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm">Taxa de Conversão</CardTitle>
+            <span className="text-xs text-muted-foreground">{MESES[mes - 1]} / {ano}</span>
           </div>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm pb-1">
-            <div>
-              <p className="text-muted-foreground">Tráfego</p>
-              <p className="font-semibold">{indicador?.leadsTrafego ?? 0}</p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col lg:flex-row gap-6">
+
+            {/* Coluna esquerda — KPI + funil */}
+            <div className="flex-[55] space-y-5">
+              {/* KPI principal */}
+              <div>
+                <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                  Taxa de Conversão Geral
+                </p>
+                <p className="text-5xl font-bold mt-2" style={{ color: taxaColor }}>
+                  {taxaConversao}%
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {realizadas} consultas realizadas de {totalLeads} leads
+                </p>
+              </div>
+
+              <div className="border-t" />
+
+              {/* Mini funil */}
+              <div>
+                <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-3">
+                  Funil do Mês
+                </p>
+                <div className="space-y-0">
+                  {funelSteps.map(({ Icon, label, valor, iconColor }, idx) => (
+                    <div key={label}>
+                      <div className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className={`h-4 w-4 shrink-0 ${iconColor}`} />
+                          <span className="text-sm text-muted-foreground">{label}</span>
+                        </div>
+                        <span className="text-lg font-bold">{valor}</span>
+                      </div>
+                      {idx < funelSteps.length - 1 && (
+                        <div className="ml-2 w-px h-3 bg-border" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground">Impulsionar</p>
-              <p className="font-semibold">{indicador?.leadsImpulsionar ?? 0}</p>
+
+            {/* Divisor vertical */}
+            <div className="hidden lg:block w-px bg-border shrink-0" />
+
+            {/* Coluna direita — Leads por canal */}
+            <div className="flex-[45]">
+              <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-3">
+                Leads por Canal
+              </p>
+              <div className="space-y-3">
+                {canais.map((canal) => {
+                  const proporcao = totalLeads > 0 ? (canal.leads / totalLeads) * 100 : 0
+                  return (
+                    <div key={canal.nome}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`text-sm font-medium ${canal.text}`}>{canal.label}</span>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-semibold">{canal.leads} leads</span>
+                          <span className="text-muted-foreground text-xs w-8 text-right">
+                            ({proporcao.toFixed(0)}%)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${canal.cor}`}
+                          style={{ width: `${proporcao}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground">Remartik</p>
-              <p className="font-semibold">{indicador?.leadsRemartik ?? 0}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">FC</p>
-              <p className="font-semibold">{indicador?.leadsFC ?? 0}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Link</p>
-              <p className="font-semibold">{indicador?.leadsLink ?? 0}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Fáb. Instagram</p>
-              <p className="font-semibold">{indicador?.leadsFabrica ?? 0}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Turbinar</p>
-              <p className="font-semibold">{indicador?.leadsTurbinar ?? 0}</p>
-            </div>
+
           </div>
         </CardContent>
       </Card>
-
-      {/* Cards por canal com borda superior colorida */}
-      {indicador && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {[
-            { label: "Tráfego",      valor: indicador.leadsTrafego,     cor: "border-t-amber-400"  },
-            { label: "Impulsionar",  valor: indicador.leadsImpulsionar, cor: "border-t-blue-400"   },
-            { label: "Remartik",     valor: indicador.leadsRemartik,    cor: "border-t-purple-400" },
-            { label: "FC",           valor: indicador.leadsFC,          cor: "border-t-green-400"  },
-            { label: "Link",         valor: indicador.leadsLink,        cor: "border-t-orange-400" },
-          ].map((canal) => (
-            <Card key={canal.label} className={`border-t-4 ${canal.cor}`}>
-              <CardContent className="pt-4 px-4 pb-4">
-                <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">{canal.label}</p>
-                <p className="text-2xl font-bold mt-1">{canal.valor}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">leads</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
       {/* Histórico anual resumido */}
       {historico.length > 0 && (
@@ -155,29 +201,39 @@ export default async function IndicadorConversaoPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="text-left p-3 font-medium">Mês</th>
-                <th className="text-right p-3 font-medium">Total Leads</th>
-                <th className="text-right p-3 font-medium">Realizadas</th>
-                <th className="text-right p-3 font-medium">Taxa</th>
+                <th className="text-left p-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Mês</th>
+                <th className="text-right p-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Leads</th>
+                <th className="text-right p-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Realizadas</th>
+                <th className="text-right p-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground min-w-[120px]">Taxa</th>
               </tr>
             </thead>
             <tbody>
-              {historico.map((h) => (
-                <tr key={h.id} className={`border-b ${h.mes === mes ? "bg-muted/60 font-medium" : ""}`}>
-                  <td className="p-3">{MESES[h.mes - 1]}</td>
-                  <td className="p-3 text-right">{h.totalLeads}</td>
-                  <td className="p-3 text-right">{h.consultasRealizadas}</td>
-                  <td className="p-3 text-right font-semibold" style={{
-                    color: h.totalLeads > 0 && (h.consultasRealizadas / h.totalLeads) >= 0.1
-                      ? "hsl(36, 55%, 45%)"
-                      : "hsl(20, 65%, 52%)",
-                  }}>
-                    {h.totalLeads > 0
-                      ? ((h.consultasRealizadas / h.totalLeads) * 100).toFixed(1)
-                      : "0.0"}%
-                  </td>
-                </tr>
-              ))}
+              {historico.map((h) => {
+                const hTaxa = h.totalLeads > 0 ? h.consultasRealizadas / h.totalLeads : 0
+                return (
+                  <tr key={h.id} className={`border-b hover:bg-accent/50 transition-colors ${h.mes === mes ? "bg-muted/60 font-medium" : ""}`}>
+                    <td className="p-3">{MESES[h.mes - 1]}</td>
+                    <td className="p-3 text-right">{h.totalLeads}</td>
+                    <td className="p-3 text-right">{h.consultasRealizadas}</td>
+                    <td className="p-3 text-right">
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="font-semibold" style={{ color: hTaxa >= 0.1 ? "hsl(36, 55%, 45%)" : "hsl(20, 65%, 52%)" }}>
+                          {(hTaxa * 100).toFixed(1)}%
+                        </span>
+                        <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{
+                              width: `${Math.min(hTaxa * 100 * 5, 100)}%`,
+                              backgroundColor: getBarColor(hTaxa),
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
