@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums (SQLite: stored as String) ────────────────────────────────────────
+
+// PapelUsuario: ADMIN | GESTOR | ATENDENTE | VISUALIZADOR
+// CanalLead: IMPULSIONAR | REMARTIK | TRAFEGO | FC | LINK | FABRICA_INSTAGRAM | TURBINAR | OUTRO
+// StatusLead: ABORDAGEM | EM_CONVERSA | AGENDADO | CONVERTIDO | CANCELADO | PAROU_DE_INTERAGIR | FECHOU | CONSULTA_FECHADA | LEAD_PERDIDO
+// OrigemConsulta: FC | LINK | TRAFEGO | TRAFEGO_RECORRENCIA | REMARTIK
+// StatusConsulta: REALIZADA | CANCELADA | PENDENTE
+
+// ─── Usuário ─────────────────────────────────────────────────────────────────
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  papel     String   @default("ATENDENTE")
+  ativo     Boolean  @default(true)
+  criadoEm DateTime @default(now()) @map("criado_em")
+
+  leads    Lead[]
+  sessions Session[]
+  accounts Account[]
+
+  @@map("usuarios")
+}
+
+// ─── NextAuth v5 adapter tables ──────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  user Usuario @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── Lead ─────────────────────────────────────────────────────────────────────
+
+model Lead {
+  id                  String   @id @default(cuid())
+  nome                String
+  canal               String
+  codigoWhatsApp      String?  @map("codigo_whatsapp")
+  status              String   @default("ABORDAGEM")
+  dataCriacao         DateTime @default(now()) @map("data_criacao")
+  dataUltimaInteracao DateTime @default(now()) @map("data_ultima_interacao")
+  observacoes         String?
+  kommoLeadId         String?  @unique @map("kommo_lead_id")
+
+  userId           String       @map("user_id")
+  usuario          Usuario      @relation(fields: [userId], references: [id])
+  origemCampanhaId String?      @map("origem_campanha_id")
+  origemCampanha   MetaCampanha? @relation(fields: [origemCampanhaId], references: [id])
+
+  consultas  Consulta[]
+  interacoes LeadInteracao[]
+
+  @@index([status])
+  @@index([canal])
+  @@index([userId])
+  @@map("leads")
+}
+
+model LeadInteracao {
+  id        String   @id @default(cuid())
+  leadId    String   @map("lead_id")
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  descricao String
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  @@index([leadId])
+  @@map("lead_interacoes")
+}
+
+// ─── Consulta ─────────────────────────────────────────────────────────────────
+
+model Consulta {
+  id            String    @id @default(cuid())
+  nomeCliente   String    @map("nome_cliente")
+  dataPagamento DateTime? @map("data_pagamento")
+  dataConsulta  DateTime  @map("data_consulta")
+  origem        String
+  valor         Decimal?
+  status        String    @default("PENDENTE")
+  mes           Int
+  ano           Int
+  observacoes   String?
+
+  leadId String? @map("lead_id")
+  lead   Lead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([mes, ano])
+  @@index([status])
+  @@index([origem])
+  @@map("consultas")
+}
+
+// ─── Indicadores Financeiros ──────────────────────────────────────────────────
+
+model MetaFinanceira {
+  id            String  @id @default(cuid())
+  mes           Int
+  ano           Int
+  metaAceitavel Decimal @map("meta_aceitavel")
+  metaIdeal     Decimal @map("meta_ideal")
+  superMeta     Decimal @map("super_meta")
+
+  @@unique([mes, ano])
+  @@map("metas_financeiras")
+}
+
+// ─── Indicadores Comerciais ───────────────────────────────────────────────────
+
+model IndicadorComercial {
+  id                     String  @id @default(cuid())
+  mes                    Int
+  ano                    Int
+  agendamentosNovosQtd   Int     @default(0) @map("agendamentos_novos_qtd")
+  agendamentosNovosValor Decimal @default(0) @map("agendamentos_novos_valor")
+  recorrenciaQtd         Int     @default(0) @map("recorrencia_qtd")
+  recorrenciaValor       Decimal @default(0) @map("recorrencia_valor")
+
+  @@unique([mes, ano])
+  @@map("indicadores_comerciais")
+}
+
+// ─── Indicadores de Conversão ─────────────────────────────────────────────────
+
+model IndicadorConversao {
+  id                  String @id @default(cuid())
+  mes                 Int
+  ano                 Int
+  totalLeads          Int    @default(0) @map("total_leads")
+  leadsTrafego        Int    @default(0) @map("leads_trafego")
+  leadsImpulsionar    Int    @default(0) @map("leads_impulsionar")
+  leadsRemartik       Int    @default(0) @map("leads_remartik")
+  leadsFC             Int    @default(0) @map("leads_fc")
+  leadsLink           Int    @default(0) @map("leads_link")
+  leadsFabrica        Int    @default(0) @map("leads_fabrica")
+  leadsTurbinar       Int    @default(0) @map("leads_turbinar")
+  consultasAgendadas  Int    @default(0) @map("consultas_agendadas")
+  consultasRealizadas Int    @default(0) @map("consultas_realizadas")
+
+  @@unique([mes, ano])
+  @@map("indicadores_conversao")
+}
+
+// ─── Meta Ads ─────────────────────────────────────────────────────────────────
+
+model MetaCampanha {
+  id             String    @id @default(cuid())
+  campanhaId     String    @unique @map("campanha_id")
+  nome           String
+  status         String
+  investimento   Decimal   @default(0)
+  alcance        Int       @default(0)
+  impressoes     Int       @default(0)
+  cliques        Int       @default(0)
+  leadsGerados   Int       @default(0) @map("leads_gerados")
+  custoPorLead   Decimal?  @map("custo_por_lead")
+  dataInicio     DateTime? @map("data_inicio")
+  dataFim        DateTime? @map("data_fim")
+  sincronizadoEm DateTime  @default(now()) @map("sincronizado_em")
+
+  leads Lead[]
+
+  @@map("meta_campanhas")
+}
+
+// ─── Config de Integrações ────────────────────────────────────────────────────
+
+model IntegracaoConfig {
+  id           String    @id @default(cuid())
+  servico      String    @unique
+  accessToken  String?   @map("access_token")
+  refreshToken String?   @map("refresh_token")
+  expiresAt    DateTime? @map("expires_at")
+  extraData    String?   @map("extra_data")
+  atualizadoEm DateTime  @updatedAt @map("atualizado_em")
+
+  @@map("integracao_configs")
+}
