@@ -46,3 +46,6 @@ next-env.d.ts
 prisma/migrations/
 prisma/*.db
 prisma/*.db-journal
+
+# Scripts locais com dados sensíveis
+/scripts/

@@ -101,7 +101,7 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
   url.searchParams.set("access_token", accessToken)
   url.searchParams.set(
     "fields",
-    "id,name,status,start_time,stop_time,insights{spend,reach,impressions,clicks,leads}"
+    "id,name,status,start_time,stop_time,insights{spend,reach,impressions,clicks}"
   )
   url.searchParams.set("limit", "100")
 
@@ -115,7 +115,6 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
   const campanhas: MetaCampanhaData[] = (data.data ?? []).map((c: Record<string, unknown>) => {
     const insights = (c.insights as { data: Record<string, string>[] } | undefined)?.data?.[0] ?? {}
     const spend = parseFloat(insights.spend ?? "0")
-    const leads = parseInt(insights.leads ?? "0", 10)
     return {
       campanhaId: String(c.id),
       nome: String(c.name),
@@ -124,8 +123,8 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
       alcance: parseInt(insights.reach ?? "0", 10),
       impressoes: parseInt(insights.impressions ?? "0", 10),
       cliques: parseInt(insights.clicks ?? "0", 10),
-      leadsGerados: leads,
-      custoPorLead: leads > 0 ? spend / leads : null,
+      leadsGerados: 0,
+      custoPorLead: null,
       dataInicio: c.start_time ? new Date(String(c.start_time)) : null,
       dataFim: c.stop_time ? new Date(String(c.stop_time)) : null,
     }

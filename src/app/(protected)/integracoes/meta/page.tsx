@@ -46,7 +46,7 @@ export default async function MetaIntegracaoPage({
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
 
   const authUrl = metaAppId
-    ? `https://www.facebook.com/v19.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(`${baseUrl}/api/integracoes/meta/callback`)}&scope=ads_read,leads_retrieval,pages_read_engagement&response_type=code`
+    ? `https://www.facebook.com/v19.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(`${baseUrl}/api/integracoes/meta/callback`)}&scope=ads_read,pages_read_engagement&response_type=code`
     : null
 
   return (
