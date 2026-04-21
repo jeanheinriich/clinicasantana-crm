@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { MobileHeader } from "@/components/layout/mobile-header"
 import type { PapelUsuario } from "@/lib/enums"
 
 export default async function ProtectedLayout({
@@ -20,7 +21,8 @@ export default async function ProtectedLayout({
           nomeUsuario={session.user.name ?? session.user.email ?? ""}
         />
         <main className="flex flex-1 flex-col min-w-0 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6">{children}</div>
+          <MobileHeader />
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
         </main>
       </div>
     </SidebarProvider>

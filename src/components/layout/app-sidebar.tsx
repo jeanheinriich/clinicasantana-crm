@@ -61,7 +61,7 @@ export function AppSidebar({ papel, nomeUsuario }: AppSidebarProps) {
   )
 
   return (
-    <Sidebar collapsible="none" className="border-r border-sidebar-border shrink-0">
+    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border shrink-0">
       <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
         <div className="flex flex-col gap-0.5 group-data-[collapsible=icon]:hidden">
           <span className="font-semibold text-foreground text-sm leading-tight">
