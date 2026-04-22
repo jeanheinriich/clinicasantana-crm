@@ -91,7 +91,7 @@ export default async function LeadsPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold">Leads</h2>
           <p className="text-muted-foreground text-sm">{total} leads encontrados</p>
@@ -145,8 +145,33 @@ export default async function LeadsPage({
         </Button>
       </form>
 
-      {/* Table */}
-      <div className="rounded-md border overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="md:hidden space-y-3">
+        {leads.length === 0 && (
+          <p className="text-center text-muted-foreground py-8">Nenhum lead encontrado.</p>
+        )}
+        {leads.map((lead) => (
+          <div key={lead.id} className="rounded-lg border bg-card p-4 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <span className="font-medium text-sm leading-tight">{lead.nome}</span>
+              <LeadStatusBadge status={lead.status as StatusLead} />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <CanalBadge canal={lead.canal} />
+              <span className="text-xs text-muted-foreground">{lead.usuario.nome}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">{formatDate(lead.dataUltimaInteracao)}</span>
+              <Button variant="ghost" size="sm" asChild className="h-8 px-3">
+                <Link href={`/leads/${lead.id}`}>Ver</Link>
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: tabela */}
+      <div className="hidden md:block rounded-md border overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/60">
             <TableRow className="hover:bg-muted/60">
