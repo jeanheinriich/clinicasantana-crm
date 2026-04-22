@@ -65,7 +65,7 @@ export default async function IndicadorComercialPage({
           <h2 className="text-2xl font-bold">Indicadores Comerciais</h2>
           <p className="text-muted-foreground text-sm">{MESES[mes - 1]} / {ano}</p>
         </div>
-        <form method="GET" className="flex gap-2">
+        <form method="GET" className="flex flex-wrap gap-2">
           <Select name="mes" defaultValue={String(mes)}>
             <SelectTrigger className="w-36">
               <SelectValue />
@@ -127,7 +127,7 @@ export default async function IndicadorComercialPage({
       </div>
 
       {/* Ticket médio */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
           <CardContent className="pt-5 px-5 pb-5">
             <div className="flex items-start justify-between">

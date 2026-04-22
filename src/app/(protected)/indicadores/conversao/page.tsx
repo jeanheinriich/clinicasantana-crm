@@ -80,7 +80,7 @@ export default async function IndicadorConversaoPage({
           <h2 className="text-2xl font-bold">Indicadores de Conversão</h2>
           <p className="text-muted-foreground text-sm">{MESES[mes - 1]} / {ano}</p>
         </div>
-        <form method="GET" className="flex gap-2">
+        <form method="GET" className="flex flex-wrap gap-2">
           <Select name="mes" defaultValue={String(mes)}>
             <SelectTrigger className="w-36">
               <SelectValue />
