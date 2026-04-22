@@ -56,7 +56,7 @@ export function FunilSection({
       <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
         Funil de Conversão
       </p>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
         {/* Card 1 — Leads Recebidos */}
         <Card>
@@ -112,7 +112,7 @@ export function FunilSection({
           <CardContent className="pt-5 px-5 pb-5">
             <div className="flex items-start justify-between">
               <p className="text-sm text-muted-foreground">Consultas Realizadas</p>
-              <CheckSquare className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--meta-batida))" }} />
+              <CheckSquare className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--meta-batida)" }} />
             </div>
             <p className="text-3xl font-bold mt-2">{consultasRealizadas}</p>
             <p className="text-xs text-muted-foreground mt-0.5">consultas no mês</p>
@@ -135,7 +135,7 @@ export function FunilSection({
           <CardContent className="pt-5 px-5 pb-5">
             <div className="flex items-start justify-between">
               <p className="text-sm text-muted-foreground">Faturamento Gerado</p>
-              <DollarSign className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "hsl(var(--meta-super))" }} />
+              <DollarSign className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--meta-super)" }} />
             </div>
             <p className="text-3xl font-bold mt-2">{formatCurrency(realizado)}</p>
             <p className="text-xs text-muted-foreground mt-0.5">faturamento do mês</p>

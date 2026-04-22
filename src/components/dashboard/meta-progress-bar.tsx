@@ -28,23 +28,23 @@ export function MetaProgressBar({
   function getStatus(): StatusInfo {
     if (realizado >= superMeta) return {
       label: "Super Meta atingida!",
-      color: "text-[hsl(var(--meta-batida))] font-bold",
-      barColor: "hsl(var(--meta-batida))",
+      color: "text-[var(--meta-batida)] font-bold",
+      barColor: "var(--meta-batida)",
     }
     if (realizado >= metaIdeal) return {
       label: "Meta Ideal atingida!",
-      color: "text-[hsl(var(--meta-ideal))] font-semibold",
-      barColor: "hsl(var(--meta-ideal))",
+      color: "text-[var(--meta-ideal)] font-semibold",
+      barColor: "var(--meta-ideal)",
     }
     if (realizado >= metaAceitavel) return {
       label: "Meta Aceitável atingida",
-      color: "text-[hsl(var(--meta-aceitavel))]",
-      barColor: "hsl(var(--meta-aceitavel))",
+      color: "text-[var(--meta-aceitavel)]",
+      barColor: "var(--meta-aceitavel)",
     }
     return {
       label: "Abaixo da meta aceitável",
-      color: "text-[hsl(var(--meta-abaixo))]",
-      barColor: "hsl(var(--meta-abaixo))",
+      color: "text-[var(--meta-abaixo)]",
+      barColor: "var(--meta-abaixo)",
     }
   }
 

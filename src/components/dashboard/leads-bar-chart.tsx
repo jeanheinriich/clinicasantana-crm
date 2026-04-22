@@ -40,7 +40,7 @@ export function LeadsBarChart({ data }: LeadsBarChartProps) {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+          <BarChart data={data} margin={{ top: 0, right: 0, left: -8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#edeae8" />
             <XAxis dataKey="canal" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
@@ -52,7 +52,7 @@ export function LeadsBarChart({ data }: LeadsBarChartProps) {
               {data.map((entry) => (
                 <Cell
                   key={entry.canal}
-                  fill={CORES[entry.canal] ?? "hsl(var(--chart-1))"}
+                  fill={CORES[entry.canal] ?? "var(--chart-1)"}
                 />
               ))}
             </Bar>

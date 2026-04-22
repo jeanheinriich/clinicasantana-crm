@@ -29,7 +29,7 @@ export function FaturamentoLineChart({ data }: FaturamentoLineChartProps) {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={data} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 4, right: 4, left: -4, bottom: 0 }}>
             <CartesianGrid
               strokeDasharray="4 4"
               stroke="#edeae8"
@@ -45,7 +45,7 @@ export function FaturamentoLineChart({ data }: FaturamentoLineChartProps) {
               contentStyle={{
                 fontSize: 12,
                 borderRadius: 8,
-                border: "1px solid hsl(var(--border))",
+                border: "1px solid var(--border)",
               }}
             />
             <Area
