@@ -111,7 +111,7 @@ export function ConversaoForm({ mes, ano, indicador }: ConversaoFormProps) {
             {/* Leads por canal */}
             <div>
               <p className="text-sm font-medium mb-3">Leads por Canal</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {(
                   [
                     { name: "totalLeads",      label: "Total de Leads" },
@@ -145,7 +145,7 @@ export function ConversaoForm({ mes, ano, indicador }: ConversaoFormProps) {
             {/* Consultas */}
             <div>
               <p className="text-sm font-medium mb-3">Consultas</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField
                   control={form.control}
                   name="consultasAgendadas"

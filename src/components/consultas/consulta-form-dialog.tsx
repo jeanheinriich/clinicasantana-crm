@@ -156,7 +156,7 @@ export function ConsultaFormDialog({ consulta, children }: ConsultaFormDialogPro
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="dataConsulta"
@@ -184,7 +184,7 @@ export function ConsultaFormDialog({ consulta, children }: ConsultaFormDialogPro
                 )}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="origem"
