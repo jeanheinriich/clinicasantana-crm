@@ -117,14 +117,14 @@ export default async function ConsultasPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold">Consultas</h2>
           <p className="text-muted-foreground text-sm">
             {total} consultas | Faturamento: {formatCurrency(Number(totalRealizado._sum.valor ?? 0))}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" asChild>
             <a
               href={`/api/exportar/consultas?mes=${mes}&ano=${ano}&status=${params.status ?? ""}&origem=${params.origem ?? ""}`}
@@ -195,8 +195,54 @@ export default async function ConsultasPage({
         </Button>
       </form>
 
-      {/* Table */}
-      <div className="rounded-md border overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="md:hidden space-y-3">
+        {consultas.length === 0 && (
+          <p className="text-center text-muted-foreground py-8">Nenhuma consulta encontrada.</p>
+        )}
+        {consultas.map((c) => (
+          <div
+            key={c.id}
+            className={`rounded-lg border bg-card p-4 space-y-2 ${c.status === "CANCELADA" ? "opacity-60" : ""}`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <span className="font-medium text-sm leading-tight">{c.nomeCliente}</span>
+              <Badge variant={STATUS_VARIANT[c.status as StatusConsulta]}>
+                {STATUS_LABELS[c.status as StatusConsulta] ?? c.status}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full border ${ORIGEM_STYLE[c.origem] ?? "bg-muted text-muted-foreground border-border"}`}>
+                {ORIGEM_LABELS[c.origem as OrigemConsulta] ?? c.origem}
+              </span>
+              <span className="text-xs font-medium">{c.valor != null ? formatCurrency(Number(c.valor)) : "—"}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">{formatDate(c.dataConsulta)}</span>
+              {podeEditar && (
+                <ConsultaFormDialog consulta={{
+                  id: c.id,
+                  nomeCliente: c.nomeCliente,
+                  dataConsulta: c.dataConsulta,
+                  dataPagamento: c.dataPagamento,
+                  origem: c.origem,
+                  valor: c.valor != null ? Number(c.valor) : null,
+                  status: c.status,
+                  observacoes: c.observacoes,
+                  mes: c.mes,
+                  ano: c.ano,
+                  leadId: c.leadId,
+                }}>
+                  <Button variant="ghost" size="sm" className="h-8 px-3">Editar</Button>
+                </ConsultaFormDialog>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: tabela */}
+      <div className="hidden md:block rounded-md border overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/60">
             <TableRow className="hover:bg-muted/60">
