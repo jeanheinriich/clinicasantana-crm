@@ -95,8 +95,8 @@ export function MetaProgressBar({
           ))}
         </div>
 
-        {/* Labels das metas */}
-        <div className="grid grid-cols-3 gap-2 text-xs">
+        {/* Labels das metas — 3 colunas em sm+, lista vertical em mobile */}
+        <div className="hidden sm:grid grid-cols-3 gap-2 text-xs">
           <div className="text-center">
             <p className="text-muted-foreground">Aceitável</p>
             <p className="font-semibold">{formatCurrency(metaAceitavel)}</p>
@@ -109,6 +109,18 @@ export function MetaProgressBar({
             <p className="text-muted-foreground">Super Meta</p>
             <p className="font-semibold">{formatCurrency(superMeta)}</p>
           </div>
+        </div>
+        <div className="sm:hidden space-y-1 text-xs">
+          {([
+            { label: "Aceitável", valor: metaAceitavel },
+            { label: "Ideal",     valor: metaIdeal },
+            { label: "Super Meta", valor: superMeta },
+          ] as const).map((item) => (
+            <div key={item.label} className="flex justify-between">
+              <span className="text-muted-foreground">{item.label}</span>
+              <span className="font-semibold">{formatCurrency(item.valor)}</span>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

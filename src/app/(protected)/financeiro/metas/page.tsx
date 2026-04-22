@@ -124,7 +124,7 @@ export default async function MetasPage() {
                         }}
                       />
                     </div>
-                    <div className="grid grid-cols-3 gap-1 text-xs text-muted-foreground">
+                    <div className="hidden sm:grid grid-cols-3 gap-1 text-xs text-muted-foreground">
                       <div>
                         <p>Aceitável</p>
                         <p className="font-medium text-foreground">{formatCurrency(Number(meta.metaAceitavel))}</p>
@@ -137,6 +137,18 @@ export default async function MetasPage() {
                         <p>Super</p>
                         <p className="font-medium text-foreground">{formatCurrency(Number(meta.superMeta))}</p>
                       </div>
+                    </div>
+                    <div className="sm:hidden space-y-0.5 text-xs text-muted-foreground">
+                      {[
+                        { label: "Aceitável", valor: Number(meta.metaAceitavel) },
+                        { label: "Ideal",     valor: Number(meta.metaIdeal) },
+                        { label: "Super",     valor: Number(meta.superMeta) },
+                      ].map((item) => (
+                        <div key={item.label} className="flex justify-between">
+                          <span>{item.label}</span>
+                          <span className="font-medium text-foreground">{formatCurrency(item.valor)}</span>
+                        </div>
+                      ))}
                     </div>
                     {podeEditar && (
                       <MetaFinanceiraForm mes={mes} ano={ano} metaAtual={{
