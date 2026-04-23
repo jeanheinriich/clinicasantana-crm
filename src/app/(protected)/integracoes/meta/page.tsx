@@ -62,7 +62,7 @@ export default async function MetaIntegracaoPage({
       </div>
 
       {params.sucesso && (
-        <Alert style={{ borderColor: "hsl(var(--status-ok-border))", backgroundColor: "hsl(var(--status-ok-bg))", color: "hsl(var(--status-ok))" }}>
+        <Alert style={{ borderColor: "var(--status-ok-border)", backgroundColor: "var(--status-ok-bg)", color: "var(--status-ok)" }}>
           <AlertDescription>Conta Meta conectada com sucesso!</AlertDescription>
         </Alert>
       )}
@@ -82,7 +82,7 @@ export default async function MetaIntegracaoPage({
             <div className="flex items-center gap-2">
               <div
                 className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: isConnected ? "hsl(var(--status-ok))" : "hsl(var(--destructive))" }}
+                style={{ backgroundColor: isConnected ? "var(--status-ok)" : "var(--destructive)" }}
               />
               <span className="text-sm font-medium">
                 {isConnected ? "Conectado" : "Desconectado"}

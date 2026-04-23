@@ -51,7 +51,7 @@ export default async function KommoIntegracaoPage({
       </div>
 
       {params.sucesso && (
-        <Alert style={{ borderColor: "hsl(var(--status-ok-border))", backgroundColor: "hsl(var(--status-ok-bg))", color: "hsl(var(--status-ok))" }}>
+        <Alert style={{ borderColor: "var(--status-ok-border)", backgroundColor: "var(--status-ok-bg)", color: "var(--status-ok)" }}>
           <AlertDescription>Kommo conectado com sucesso!</AlertDescription>
         </Alert>
       )}
@@ -70,7 +70,7 @@ export default async function KommoIntegracaoPage({
             <div className="flex items-center gap-2">
               <div
                 className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: isConnected ? "hsl(var(--status-ok))" : "hsl(var(--destructive))" }}
+                style={{ backgroundColor: isConnected ? "var(--status-ok)" : "var(--destructive)" }}
               />
               <span className="text-sm font-medium">
                 {isConnected ? "Conectado" : "Desconectado"}

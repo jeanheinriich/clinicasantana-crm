@@ -15,14 +15,16 @@ export default async function ProtectedLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar
-        papel={session.user.papel as PapelUsuario}
-        nomeUsuario={session.user.name ?? session.user.email ?? ""}
-      />
-      <main className="flex flex-1 flex-col min-w-0 overflow-hidden">
-        <MobileHeader />
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
-      </main>
+      <div className="flex h-svh w-full overflow-hidden">
+        <AppSidebar
+          papel={session.user.papel as PapelUsuario}
+          nomeUsuario={session.user.name ?? session.user.email ?? ""}
+        />
+        <main className="flex flex-1 flex-col min-w-0 overflow-hidden">
+          <MobileHeader />
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">{children}</div>
+        </main>
+      </div>
     </SidebarProvider>
   )
 }
