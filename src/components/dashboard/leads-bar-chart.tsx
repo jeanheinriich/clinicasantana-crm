@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface LeadsData {
   canal: string
-  key: string
+  key?: string
   quantidade: number
 }
 
@@ -31,6 +31,20 @@ const CORES: Record<string, string> = {
   "FABRICA_INSTAGRAM": "hsl(190, 50%, 45%)",
   "TURBINAR":          "hsl(180, 35%, 42%)",
   "OUTRO":             "hsl(25,  8%,  56%)",
+}
+
+function normalizar(canal: string): string {
+  return canal
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\s+/g, "_")
+    .replace(/[.\-]/g, "")
+    .trim()
+}
+
+function getCanalCor(canal: string): string {
+  return CORES[normalizar(canal)] ?? "hsl(0, 0%, 65%)"
 }
 
 export function LeadsBarChart({ data }: LeadsBarChartProps) {
@@ -53,7 +67,7 @@ export function LeadsBarChart({ data }: LeadsBarChartProps) {
               {data.map((entry) => (
                 <Cell
                   key={entry.canal}
-                  fill={CORES[entry.key] ?? "var(--chart-1)"}
+                  fill={getCanalCor(entry.key ?? entry.canal)}
                 />
               ))}
             </Bar>
