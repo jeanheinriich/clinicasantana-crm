@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface LeadsData {
   canal: string
+  key: string
   quantidade: number
 }
 
@@ -22,14 +23,14 @@ interface LeadsBarChartProps {
 }
 
 const CORES: Record<string, string> = {
-  "Impulsionar": "hsl(210, 65%, 52%)",
-  "Remartik":    "hsl(258, 55%, 58%)",
-  "Tráfego":     "hsl(36,  55%, 45%)",
-  "FC":          "hsl(142, 45%, 42%)",
-  "Link":        "hsl(20,  60%, 52%)",
-  "Fáb. Inst.":  "hsl(190, 50%, 45%)",
-  "Turbinar":    "hsl(180, 35%, 42%)",
-  "Outro":       "hsl(25,  8%,  56%)",
+  "IMPULSIONAR":       "hsl(210, 65%, 52%)",
+  "REMARTIK":          "hsl(258, 55%, 58%)",
+  "TRAFEGO":           "hsl(36,  55%, 45%)",
+  "FC":                "hsl(142, 45%, 42%)",
+  "LINK":              "hsl(20,  60%, 52%)",
+  "FABRICA_INSTAGRAM": "hsl(190, 50%, 45%)",
+  "TURBINAR":          "hsl(180, 35%, 42%)",
+  "OUTRO":             "hsl(25,  8%,  56%)",
 }
 
 export function LeadsBarChart({ data }: LeadsBarChartProps) {
@@ -52,7 +53,7 @@ export function LeadsBarChart({ data }: LeadsBarChartProps) {
               {data.map((entry) => (
                 <Cell
                   key={entry.canal}
-                  fill={CORES[entry.canal] ?? "var(--chart-1)"}
+                  fill={CORES[entry.key] ?? "var(--chart-1)"}
                 />
               ))}
             </Bar>

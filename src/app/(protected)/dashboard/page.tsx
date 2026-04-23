@@ -100,6 +100,7 @@ export default async function DashboardPage({
   const leadsPorCanalData = CANAIS
     .map(({ value, label }) => ({
       canal: label,
+      key: value,
       quantidade: leadsPorCanalRaw.find((l) => l.canal === value)?._count._all ?? 0,
     }))
     .filter((item) => item.quantidade > 0)
