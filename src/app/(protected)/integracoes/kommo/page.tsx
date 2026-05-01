@@ -38,6 +38,10 @@ export default async function KommoIntegracaoPage({
   const extraData = config?.extraData as Record<string, unknown> | null
   const lastPollAt = extraData?.lastPollAt ? new Date(String(extraData.lastPollAt)) : null
 
+  const diasParaExpirar = config?.expiresAt
+    ? Math.floor((config.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null
+
   return (
     <div className="space-y-6">
       <div>
@@ -58,6 +62,14 @@ export default async function KommoIntegracaoPage({
       {params.erro && (
         <Alert variant="destructive">
           <AlertDescription>Erro: {params.erro}</AlertDescription>
+        </Alert>
+      )}
+      {diasParaExpirar !== null && diasParaExpirar < 7 && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            <strong>Token do Kommo expira em {diasParaExpirar} dia{diasParaExpirar !== 1 ? "s" : ""}.</strong>{" "}
+            Reconecte a integração antes que o polling pare de funcionar.
+          </AlertDescription>
         </Alert>
       )}
 
