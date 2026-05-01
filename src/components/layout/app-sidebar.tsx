@@ -17,16 +17,13 @@ import {
 } from "lucide-react"
 import type { PapelUsuario } from "@/lib/enums"
 import { temPermissao } from "@/lib/permissions"
+import { useSidebar } from "@/components/ui/sidebar"
 import {
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from "@/components/ui/sidebar"
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 
 interface NavItem {
   href: string
@@ -52,7 +49,13 @@ interface AppSidebarProps {
   nomeUsuario: string
 }
 
-export function AppSidebar({ papel, nomeUsuario }: AppSidebarProps) {
+interface NavContentProps {
+  papel: PapelUsuario
+  nomeUsuario: string
+  onNavigate?: () => void
+}
+
+function NavContent({ papel, nomeUsuario, onNavigate }: NavContentProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -61,64 +64,81 @@ export function AppSidebar({ papel, nomeUsuario }: AppSidebarProps) {
   )
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border shrink-0">
-      <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
-        <div className="flex flex-col gap-0.5 group-data-[collapsible=icon]:hidden">
-          <span className="font-semibold text-foreground text-sm leading-tight">
-            Clínica Santana
-          </span>
-          <span className="text-xs text-muted-foreground truncate">{nomeUsuario}</span>
-        </div>
-      </SidebarHeader>
+    <>
+      <div className="border-b border-sidebar-border px-4 py-4">
+        <span className="block font-semibold text-foreground text-sm leading-tight">
+          Clínica Santana
+        </span>
+        <span className="block text-xs text-muted-foreground truncate">{nomeUsuario}</span>
+      </div>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            {visibleItems.map((item) => {
-              const Icon = item.icon
-              const isActive =
-                pathname === item.href || pathname.startsWith(item.href + "/")
-              return (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.label}
-                    className={
-                      isActive
-                        ? "border-l-2 border-[hsl(36,55%,45%)] bg-[hsl(36,45%,92%)] text-[hsl(30,20%,15%)] font-medium rounded-l-none pl-[calc(0.5rem-2px)]"
-                        : "border-l-2 border-transparent text-[hsl(30,10%,45%)] hover:bg-[hsl(36,20%,93%)] hover:text-[hsl(30,15%,20%)] transition-colors duration-150"
-                    }
-                  >
-                    <Link href={item.href}>
-                      <Icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
+      <nav className="flex-1 overflow-y-auto py-2">
+        <ul className="space-y-0.5 px-2">
+          {visibleItems.map((item) => {
+            const Icon = item.icon
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/")
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={[
+                    "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors duration-150",
+                    "border-l-2",
+                    isActive
+                      ? "border-[hsl(36,55%,45%)] bg-[hsl(36,45%,92%)] text-[hsl(30,20%,15%)] font-medium rounded-l-none pl-[calc(0.75rem-2px)]"
+                      : "border-transparent text-[hsl(30,10%,45%)] hover:bg-[hsl(36,20%,93%)] hover:text-[hsl(30,15%,20%)]",
+                  ].join(" ")}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={() => signOut({ redirect: false }).then(() => router.push("/login"))}
-              tooltip="Sair"
-              className="text-sidebar-foreground hover:text-sidebar-accent-foreground"
-            >
-              <LogOut />
-              <span>Sair</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <p className="text-xs text-sidebar-foreground px-1 group-data-[collapsible=icon]:hidden">
-          {papel}
-        </p>
-      </SidebarFooter>
-    </Sidebar>
+      <div className="border-t border-sidebar-border p-3">
+        <button
+          onClick={() => signOut({ redirect: false }).then(() => router.push("/login"))}
+          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-[hsl(36,20%,93%)] hover:text-[hsl(30,15%,20%)] transition-colors duration-150"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          <span>Sair</span>
+        </button>
+        <p className="mt-1 px-3 text-xs text-muted-foreground">{papel}</p>
+      </div>
+    </>
+  )
+}
+
+export function AppSidebar({ papel, nomeUsuario }: AppSidebarProps) {
+  const { openMobile, setOpenMobile } = useSidebar()
+
+  return (
+    <>
+      {/* Desktop: static flex item — never fixed, never overlaps */}
+      <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col bg-sidebar border-r border-sidebar-border">
+        <NavContent papel={papel} nomeUsuario={nomeUsuario} />
+      </aside>
+
+      {/* Mobile: Sheet drawer via portal */}
+      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+        <SheetContent side="left" className="w-64 p-0 bg-sidebar flex flex-col">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Menu</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <NavContent
+              papel={papel}
+              nomeUsuario={nomeUsuario}
+              onNavigate={() => setOpenMobile(false)}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   )
 }
