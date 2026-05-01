@@ -1,13 +1,15 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { ConversaoForm } from "@/components/indicadores/conversao-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { temPermissao } from "@/lib/permissions"
 import type { PapelUsuario } from "@/lib/enums"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Users, Calendar, CheckSquare } from "lucide-react"
+import {
+  calcularIndicadoresConversao,
+  calcularHistoricoConversao,
+} from "@/lib/calcula-indicadores-conversao"
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -34,42 +36,38 @@ export default async function IndicadorConversaoPage({
   const papel = session.user.papel as PapelUsuario
   if (!temPermissao(papel, "indicadores", "view")) redirect("/dashboard?erro=sem-permissao")
 
-  const podeEditar = temPermissao(papel, "indicadores", "edit")
   const hoje = new Date()
   const params = await searchParams
   const mes = parseInt(params.mes ?? String(hoje.getMonth() + 1))
   const ano = parseInt(params.ano ?? String(hoje.getFullYear()))
 
   const [indicador, historico] = await Promise.all([
-    prisma.indicadorConversao.findUnique({ where: { mes_ano: { mes, ano } } }),
-    prisma.indicadorConversao.findMany({
-      where: { ano },
-      orderBy: { mes: "asc" },
-    }),
+    calcularIndicadoresConversao(mes, ano),
+    calcularHistoricoConversao(ano),
   ])
 
-  const totalLeads       = indicador?.totalLeads ?? 0
-  const agendadas        = indicador?.consultasAgendadas ?? 0
-  const realizadas       = indicador?.consultasRealizadas ?? 0
-  const taxaFrac         = totalLeads > 0 ? realizadas / totalLeads : 0
-  const taxaConversao    = totalLeads > 0 ? (taxaFrac * 100).toFixed(1) : "0.0"
-  const taxaColor        = parseFloat(taxaConversao) >= 10 ? "hsl(36, 55%, 45%)" : "hsl(20, 65%, 52%)"
+  const totalLeads    = indicador.totalLeads
+  const agendadas     = indicador.consultasAgendadas
+  const realizadas    = indicador.consultasRealizadas
+  const taxaFrac      = totalLeads > 0 ? realizadas / totalLeads : 0
+  const taxaConversao = totalLeads > 0 ? (taxaFrac * 100).toFixed(1) : "0.0"
+  const taxaColor     = parseFloat(taxaConversao) >= 10 ? "hsl(36, 55%, 45%)" : "hsl(20, 65%, 52%)"
 
   const anosDisponiveis = Array.from({ length: 5 }, (_, i) => hoje.getFullYear() - 2 + i)
 
   const canais = [
-    { nome: "TRAFEGO",           label: "Tráfego",        leads: indicador?.leadsTrafego ?? 0,     cor: "bg-amber-400",  text: "text-amber-700"  },
-    { nome: "IMPULSIONAR",       label: "Impulsionar",    leads: indicador?.leadsImpulsionar ?? 0, cor: "bg-blue-400",   text: "text-blue-700"   },
-    { nome: "REMARTIK",          label: "Remartik",       leads: indicador?.leadsRemartik ?? 0,    cor: "bg-purple-400", text: "text-purple-700" },
-    { nome: "FC",                label: "FC",             leads: indicador?.leadsFC ?? 0,          cor: "bg-green-400",  text: "text-green-700"  },
-    { nome: "LINK",              label: "Link",           leads: indicador?.leadsLink ?? 0,        cor: "bg-orange-400", text: "text-orange-700" },
-    { nome: "FABRICA_INSTAGRAM", label: "Fáb. Instagram", leads: indicador?.leadsFabrica ?? 0,     cor: "bg-teal-400",   text: "text-teal-700"   },
+    { nome: "TRAFEGO",           label: "Tráfego",        leads: indicador.leadsTrafego,     cor: "bg-amber-400",  text: "text-amber-700"  },
+    { nome: "IMPULSIONAR",       label: "Impulsionar",    leads: indicador.leadsImpulsionar, cor: "bg-blue-400",   text: "text-blue-700"   },
+    { nome: "REMARTIK",          label: "Remartik",       leads: indicador.leadsRemartik,    cor: "bg-purple-400", text: "text-purple-700" },
+    { nome: "FC",                label: "FC",             leads: indicador.leadsFC,          cor: "bg-green-400",  text: "text-green-700"  },
+    { nome: "LINK",              label: "Link",           leads: indicador.leadsLink,        cor: "bg-orange-400", text: "text-orange-700" },
+    { nome: "FABRICA_INSTAGRAM", label: "Fáb. Instagram", leads: indicador.leadsFabrica,     cor: "bg-teal-400",   text: "text-teal-700"   },
   ]
 
   const funelSteps = [
-    { Icon: Users,       label: "Leads Recebidos",      valor: totalLeads, iconColor: "text-blue-500"  },
-    { Icon: Calendar,    label: "Consultas Agendadas",   valor: agendadas,  iconColor: "text-amber-500" },
-    { Icon: CheckSquare, label: "Consultas Realizadas",  valor: realizadas, iconColor: "text-green-500" },
+    { Icon: Users,       label: "Leads Recebidos",     valor: totalLeads, iconColor: "text-blue-500"  },
+    { Icon: Calendar,    label: "Consultas Agendadas",  valor: agendadas,  iconColor: "text-amber-500" },
+    { Icon: CheckSquare, label: "Consultas Realizadas", valor: realizadas, iconColor: "text-green-500" },
   ]
 
   return (
@@ -211,7 +209,7 @@ export default async function IndicadorConversaoPage({
               {historico.map((h) => {
                 const hTaxa = h.totalLeads > 0 ? h.consultasRealizadas / h.totalLeads : 0
                 return (
-                  <tr key={h.id} className={`border-b hover:bg-accent/50 transition-colors ${h.mes === mes ? "bg-muted/60 font-medium" : ""}`}>
+                  <tr key={h.mes} className={`border-b hover:bg-accent/50 transition-colors ${h.mes === mes ? "bg-muted/60 font-medium" : ""}`}>
                     <td className="p-3">{MESES[h.mes - 1]}</td>
                     <td className="p-3 text-right">{h.totalLeads}</td>
                     <td className="p-3 text-right">{h.consultasRealizadas}</td>
@@ -237,10 +235,6 @@ export default async function IndicadorConversaoPage({
             </tbody>
           </table>
         </div>
-      )}
-
-      {podeEditar && (
-        <ConversaoForm mes={mes} ano={ano} indicador={indicador ?? null} />
       )}
     </div>
   )

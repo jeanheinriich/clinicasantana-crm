@@ -9,6 +9,7 @@ import { TicketMedioSection } from "@/components/dashboard/ticket-medio-section"
 import { FunilSection } from "@/components/dashboard/funil-section"
 import { FaturamentoLineChart } from "@/components/dashboard/faturamento-line-chart"
 import { LeadsBarChart } from "@/components/dashboard/leads-bar-chart"
+import { calcularIndicadoresConversao } from "@/lib/calcula-indicadores-conversao"
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -46,7 +47,7 @@ export default async function DashboardPage({
     metaFinanceira,
     consultasAggregate,
     indicadorComercial,
-    indicadorConversao,
+    conversao,
     realizadosPorMes,
     leadsPorCanalRaw,
   ] = await Promise.all([
@@ -57,7 +58,7 @@ export default async function DashboardPage({
       _count: true,
     }),
     prisma.indicadorComercial.findUnique({ where: { mes_ano: { mes, ano } } }),
-    prisma.indicadorConversao.findUnique({ where: { mes_ano: { mes, ano } } }),
+    calcularIndicadoresConversao(mes, ano),
     prisma.consulta.groupBy({
       by: ["mes"],
       where: { ano, status: "REALIZADA" },
@@ -85,8 +86,8 @@ export default async function DashboardPage({
   const novosValor = indicadorComercial ? Number(indicadorComercial.agendamentosNovosValor) : 0
   const recorrenciaValor = indicadorComercial ? Number(indicadorComercial.recorrenciaValor) : 0
 
-  const consultasAgendadasCount = indicadorConversao?.consultasAgendadas ?? 0
-  const consultasRealizadasCount = indicadorConversao?.consultasRealizadas ?? consultasAggregate._count
+  const consultasAgendadasCount = conversao.consultasAgendadas
+  const consultasRealizadasCount = conversao.consultasRealizadas
   const totalQtdConsultas = novosQtd + recorrenciaQtd || consultasAggregate._count
 
   // Gráfico de área: Jan → mês selecionado
@@ -176,34 +177,20 @@ export default async function DashboardPage({
       )}
 
       {/* Row 3: Funil de Conversão */}
-      {indicadorConversao ? (
-        <FunilSection
-          totalLeads={indicadorConversao.totalLeads}
-          leadsTrafego={indicadorConversao.leadsTrafego}
-          leadsImpulsionar={indicadorConversao.leadsImpulsionar}
-          leadsRemartik={indicadorConversao.leadsRemartik}
-          leadsFC={indicadorConversao.leadsFC}
-          consultasAgendadas={consultasAgendadasCount}
-          consultasRealizadas={consultasRealizadasCount}
-          novosQtd={novosQtd}
-          recorrenciaQtd={recorrenciaQtd}
-          realizado={realizado}
-          totalQtd={totalQtdConsultas}
-          superMeta={metaFinanceira ? Number(metaFinanceira.superMeta) : 0}
-        />
-      ) : (
-        <div className="space-y-3">
-          <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-            Funil de Conversão
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Indicadores de conversão não cadastrados para {MESES[mes - 1]}/{ano}.{" "}
-            <a href="/indicadores/conversao" className="underline text-foreground">
-              Cadastrar
-            </a>
-          </p>
-        </div>
-      )}
+      <FunilSection
+        totalLeads={conversao.totalLeads}
+        leadsTrafego={conversao.leadsTrafego}
+        leadsImpulsionar={conversao.leadsImpulsionar}
+        leadsRemartik={conversao.leadsRemartik}
+        leadsFC={conversao.leadsFC}
+        consultasAgendadas={consultasAgendadasCount}
+        consultasRealizadas={consultasRealizadasCount}
+        novosQtd={novosQtd}
+        recorrenciaQtd={recorrenciaQtd}
+        realizado={realizado}
+        totalQtd={totalQtdConsultas}
+        superMeta={metaFinanceira ? Number(metaFinanceira.superMeta) : 0}
+      />
 
       {/* Row 4: Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
