@@ -2,6 +2,12 @@ import { createHmac, timingSafeEqual } from "crypto"
 import { prisma } from "@/lib/prisma"
 import type { CanalLead, StatusLead } from "@/lib/enums"
 
+// Espelho do KOMMO_STATUS_MAP em kommo-api.ts — atualizar os dois juntos
+const KOMMO_STATUS_MAP: Record<number, StatusLead> = {
+  142: "ABORDAGEM",
+  // IDs reais do funil serão adicionados após confirmação via /api/integracoes/kommo/diagnostico-estagios
+}
+
 // Kommo webhook events
 interface KommoWebhookPayload {
   leads?: {
@@ -66,9 +72,15 @@ async function processEvent(payload: KommoWebhookPayload): Promise<void> {
   ]
 
   for (const lead of updatedLeads) {
+    const novoStatus = lead.status_id
+      ? KOMMO_STATUS_MAP[parseInt(lead.status_id)]
+      : undefined
     await prisma.lead.updateMany({
       where: { kommoLeadId: String(lead.id) },
-      data: { dataUltimaInteracao: new Date() },
+      data: {
+        dataUltimaInteracao: new Date(),
+        ...(novoStatus ? { status: novoStatus } : {}),
+      },
     })
   }
 
