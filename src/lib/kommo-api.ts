@@ -126,6 +126,67 @@ export async function pollKommoLeads(userId: string): Promise<{ upserted: number
   return { upserted: totalUpserted }
 }
 
+export async function fetchKommoPipelines(): Promise<
+  Array<{
+    pipeline_id:   number
+    pipeline_nome: string
+    is_main:       boolean
+    estagios:      Array<{ id: number; nome: string; tipo: number }>
+  }>
+> {
+  const config = await getKommoConfig()
+  if (!config?.accessToken) throw new Error("Token Kommo não configurado")
+
+  const subdomain = process.env.KOMMO_SUBDOMAIN
+  if (!subdomain) throw new Error("KOMMO_SUBDOMAIN não configurado")
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10_000)
+
+  let res: Response
+  try {
+    res = await fetch(
+      `https://${subdomain}.kommo.com/api/v4/leads/pipelines?with=statuses`,
+      {
+        headers: { Authorization: `Bearer ${config.accessToken}` },
+        cache: "no-store",
+        signal: controller.signal,
+      }
+    )
+  } finally {
+    clearTimeout(timeout)
+  }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(`Kommo API ${res.status}: ${JSON.stringify(err)}`)
+  }
+
+  const data = await res.json() as {
+    _embedded?: {
+      pipelines?: Array<{
+        id: number
+        name: string
+        is_main: boolean
+        _embedded?: {
+          statuses?: Array<{ id: number; name: string; type: number }>
+        }
+      }>
+    }
+  }
+
+  return (data._embedded?.pipelines ?? []).map((p) => ({
+    pipeline_id:   p.id,
+    pipeline_nome: p.name,
+    is_main:       p.is_main,
+    estagios: (p._embedded?.statuses ?? []).map((s) => ({
+      id:   s.id,
+      nome: s.name,
+      tipo: s.type,
+    })),
+  }))
+}
+
 export async function refreshKommoToken(): Promise<void> {
   const config = await getKommoConfig()
   if (!config?.refreshToken) throw new Error("Refresh token Kommo não disponível")
