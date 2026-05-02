@@ -2,10 +2,20 @@ import { createHmac, timingSafeEqual } from "crypto"
 import { prisma } from "@/lib/prisma"
 import type { CanalLead, StatusLead } from "@/lib/enums"
 
-// Espelho do KOMMO_STATUS_MAP em kommo-api.ts — atualizar os dois juntos
+// Espelho de KOMMO_STATUS_MAP em kommo-api.ts — manter sincronizados
 const KOMMO_STATUS_MAP: Record<number, StatusLead> = {
-  142: "ABORDAGEM",
-  // IDs reais do funil serão adicionados após confirmação via /api/integracoes/kommo/diagnostico-estagios
+  91327884: "ABORDAGEM",           91327888: "ABORDAGEM",
+  91327892: "EM_CONVERSA",         91327896: "PAROU_DE_INTERAGIR",
+  91327900: "EM_CONVERSA",         91328055: "EM_CONVERSA",
+  91328059: "EM_CONVERSA",         91328063: "EM_CONVERSA",
+  91328067: "EM_CONVERSA",         91328071: "EM_CONVERSA",
+  91328115: "CONVERTIDO",          91328119: "CONVERTIDO",
+  91328123: "CONVERTIDO",          91328127: "CONVERTIDO",
+  91328319: "AGENDADO",
+  94808591: "CONVERTIDO",          94808595: "CONVERTIDO",
+  94808599: "CONVERTIDO",          94808603: "CONVERTIDO",
+  142:      "FECHOU",
+  143:      "LEAD_PERDIDO",
 }
 
 // Kommo webhook events

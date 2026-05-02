@@ -10,12 +10,34 @@ type KommoLeadRaw = {
   tags?: { id: number; name: string }[]
 }
 
-// Mapeamento de status Kommo → StatusLead do sistema
-// Ajuste os IDs de acordo com a configuração do funil do cliente
+// Mapeamento de status Kommo → StatusLead
+// IDs confirmados via /api/integracoes/kommo/diagnostico-estagios em 2026-05-02
 const KOMMO_STATUS_MAP: Record<number, StatusLead> = {
-  // 142 = Nova negociação (default Kommo)
-  142: "ABORDAGEM",
-  // Adicione os IDs reais dos estágios do funil do cliente aqui
+  // ── Funil de vendas (principal) ──────────────────────────────
+  91327884: "ABORDAGEM",           // Incoming leads
+  91327888: "ABORDAGEM",           // Contato inicial
+  91327892: "EM_CONVERSA",         // Em conversa
+  91327896: "PAROU_DE_INTERAGIR",  // Não respondeu
+  91327900: "EM_CONVERSA",         // Em negociação
+  91328055: "EM_CONVERSA",         // Follow 1
+  91328059: "EM_CONVERSA",         // Follow 2 (ligar)
+  91328063: "EM_CONVERSA",         // Follow 7 dias
+  91328067: "EM_CONVERSA",         // Follow 14 dias
+  91328071: "EM_CONVERSA",         // Follow 30 dias
+  // ── Pós atendimento ──────────────────────────────────────────
+  91328115: "CONVERTIDO",          // Incoming leads (pós atendimento)
+  91328119: "CONVERTIDO",          // Dia 1
+  91328123: "CONVERTIDO",          // Dia 2
+  91328127: "CONVERTIDO",          // Dia 3 (indicação)
+  91328319: "AGENDADO",            // Retorno
+  // ── Recorrência ──────────────────────────────────────────────
+  94808591: "CONVERTIDO",          // Incoming leads (recorrência)
+  94808595: "CONVERTIDO",          // Recorrência
+  94808599: "CONVERTIDO",          // Paciente modelo
+  94808603: "CONVERTIDO",          // Mentoria Vip
+  // ── Global (todos os funis) ──────────────────────────────────
+  142: "FECHOU",                   // Closed - won
+  143: "LEAD_PERDIDO",             // Closed - lost
 }
 
 // Mapeamento de tags Kommo → CanalLead
