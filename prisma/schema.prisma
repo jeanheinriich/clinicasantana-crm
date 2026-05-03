@@ -100,6 +100,7 @@ model Lead {
   @@index([status])
   @@index([canal])
   @@index([userId])
+  @@index([dataCriacao])
   @@map("leads")
 }
 
@@ -206,6 +207,9 @@ model MetaCampanha {
 
   leads Lead[]
 
+  @@index([dataInicio])
+  @@index([dataFim])
+  @@index([status])
   @@map("meta_campanhas")
 }
 
