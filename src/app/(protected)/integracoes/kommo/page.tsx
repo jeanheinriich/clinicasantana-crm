@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { formatDateTime } from "@/lib/utils"
-import { Plug, RefreshCw } from "lucide-react"
+import { Plug } from "lucide-react"
+import { SyncButton } from "@/components/ui/sync-button"
 
 interface SearchParams { sucesso?: string; erro?: string; }
 
@@ -97,12 +98,7 @@ export default async function KommoIntegracaoPage({
               </span>
             </div>
             {isConnected ? (
-              <form action="/api/integracoes/kommo/poll" method="POST">
-                <Button variant="outline" size="sm" type="submit">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Sincronizar Agora
-                </Button>
-              </form>
+              <SyncButton endpoint="/api/integracoes/kommo/poll" />
             ) : (
               authUrl ? (
                 <Button size="sm" asChild>

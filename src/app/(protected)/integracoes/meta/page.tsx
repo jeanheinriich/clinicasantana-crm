@@ -16,7 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Megaphone, RefreshCw } from "lucide-react"
+import { Megaphone } from "lucide-react"
+import { SyncButton } from "@/components/ui/sync-button"
 
 interface SearchParams { sucesso?: string; erro?: string }
 
@@ -89,12 +90,7 @@ export default async function MetaIntegracaoPage({
             </div>
             {isConnected ? (
               <div className="flex gap-2">
-                <form action="/api/integracoes/meta/sync" method="POST">
-                  <Button variant="outline" size="sm" type="submit">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Sincronizar Agora
-                  </Button>
-                </form>
+                <SyncButton endpoint="/api/integracoes/meta/sync" />
                 {authUrl && (
                   <Button variant="outline" size="sm" asChild>
                     <a href={authUrl}>Reconectar</a>
