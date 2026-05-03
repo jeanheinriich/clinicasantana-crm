@@ -140,10 +140,9 @@ export default async function KommoIntegracaoPage({
               </span>
             </div>
             {isConnected && papel === "ADMIN" && (
-              <SyncButton
-                endpoint="/api/integracoes/kommo/registrar-webhook"
-                label={webhookRegistrado ? "Re-registrar" : "Registrar Webhook"}
-              />
+              <Button variant="outline" size="sm" disabled title="Requer plano Avançado do Kommo">
+                Registrar Webhook
+              </Button>
             )}
           </div>
           <div className="bg-muted rounded p-3 font-mono text-xs break-all text-muted-foreground">
