@@ -104,19 +104,17 @@ export function ConsultaFormDialog({ consulta, children }: ConsultaFormDialogPro
   async function onSubmit(values: FormValues) {
     const payload = {
       nomeCliente: values.nomeCliente,
-      dataConsulta: values.dataConsulta,
-      dataPagamento: values.dataPagamento || null,
+      dataConsulta: new Date(values.dataConsulta),
+      dataPagamento: values.dataPagamento ? new Date(values.dataPagamento) : null,
       origem: values.origem,
       status: values.status,
       observacoes: values.observacoes,
       valor: values.valor ? parseFloat(values.valor.replace(",", ".")) : undefined,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = isEdit
-      ? await updateConsultaAction({ id: consulta.id, ...payload } as any)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      : await createConsultaAction(payload as any)
+      ? await updateConsultaAction({ id: consulta!.id, ...payload })
+      : await createConsultaAction(payload)
 
     if (result.success) {
       toast.success(isEdit ? "Consulta atualizada!" : "Consulta criada!")
