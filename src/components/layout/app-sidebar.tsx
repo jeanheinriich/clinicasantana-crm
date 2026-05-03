@@ -40,7 +40,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/indicadores/comercial", label: "Indicadores Comerciais", icon: BarChart3, modulo: "indicadores" },
   { href: "/indicadores/conversao", label: "Indicadores de Conversão", icon: ArrowRightLeft, modulo: "indicadores" },
   { href: "/campanhas", label: "Campanhas Meta", icon: Megaphone, modulo: "campanhas" },
-  { href: "/integracoes/meta", label: "Integrações", icon: Plug, modulo: "integracoes" },
+  { href: "/integracoes/meta",  label: "Meta Ads",   icon: Megaphone, modulo: "integracoes" },
+  { href: "/integracoes/kommo", label: "Kommo CRM",  icon: Plug,      modulo: "integracoes" },
   { href: "/usuarios", label: "Usuários", icon: UserCog, modulo: "usuarios" },
 ]
 
