@@ -8,9 +8,10 @@ type State = "idle" | "loading" | "success" | "error"
 
 interface SyncButtonProps {
   endpoint: string
+  label?: string
 }
 
-export function SyncButton({ endpoint }: SyncButtonProps) {
+export function SyncButton({ endpoint, label = "Sincronizar Agora" }: SyncButtonProps) {
   const [state, setState] = useState<State>("idle")
   const [errorMsg, setErrorMsg] = useState("")
 
@@ -55,7 +56,7 @@ export function SyncButton({ endpoint }: SyncButtonProps) {
   return (
     <Button variant="outline" size="sm" onClick={handleClick} disabled={state === "loading"}>
       <RefreshCw className={`h-4 w-4 mr-2 ${state === "loading" ? "animate-spin" : ""}`} />
-      {state === "loading" ? "Sincronizando..." : "Sincronizar Agora"}
+      {state === "loading" ? "Aguardando..." : label}
     </Button>
   )
 }
