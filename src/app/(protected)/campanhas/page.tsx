@@ -12,40 +12,68 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { KpiCard } from "@/components/dashboard/kpi-card"
-import { Megaphone, RefreshCw, DollarSign, Eye, MousePointerClick, TrendingDown } from "lucide-react"
-import { calcularCPLPorCanal } from "@/lib/calcula-cpl"
+import { Megaphone, DollarSign, Eye, MousePointerClick, TrendingDown } from "lucide-react"
+import { PaginationNav } from "@/components/ui/pagination-nav"
+import { SyncButton } from "@/components/ui/sync-button"
+import { PeriodoFilter } from "@/components/campanhas/periodo-filter"
+import { startOfMonth, format } from "date-fns"
+import type { Prisma } from "@prisma/client"
 
-export default async function CampanhasPage() {
+const PAGE_SIZE = 10
+
+function buildWhere(de: string, ate: string): Prisma.MetaCampanhaWhereInput {
+  const from = new Date(de)
+  const to   = new Date(ate)
+  to.setHours(23, 59, 59, 999)
+  return {
+    dataInicio: { gte: from, lte: to },
+  }
+}
+
+export default async function CampanhasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ de?: string; ate?: string; pagina?: string }>
+}) {
   const session = await auth()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario
   if (!temPermissao(papel, "campanhas", "view")) redirect("/dashboard?erro=sem-permissao")
 
-  const hoje = new Date()
-  const mes  = hoje.getMonth() + 1
-  const ano  = hoje.getFullYear()
+  const params  = await searchParams
+  const deParam  = params.de  ?? format(startOfMonth(new Date()), "yyyy-MM-dd")
+  const ateParam = params.ate ?? format(new Date(), "yyyy-MM-dd")
+  const pagina   = Math.max(1, parseInt(params.pagina ?? "1", 10))
 
-  const [campanhas, totais, cpl] = await Promise.all([
+  const where = buildWhere(deParam, ateParam)
+
+  const [campanhas, total, totais, totalLeads] = await Promise.all([
     prisma.metaCampanha.findMany({
-      orderBy: { sincronizadoEm: "desc" },
+      where,
+      orderBy: { investimento: "desc" },
+      take: PAGE_SIZE,
+      skip: (pagina - 1) * PAGE_SIZE,
     }),
+    prisma.metaCampanha.count({ where }),
     prisma.metaCampanha.aggregate({
-      _sum: {
-        investimento: true,
-        alcance:      true,
-        cliques:      true,
+      where,
+      _sum: { investimento: true, alcance: true, cliques: true },
+    }),
+    prisma.lead.count({
+      where: {
+        dataCriacao: { gte: new Date(deParam), lte: new Date(ateParam) },
       },
     }),
-    calcularCPLPorCanal(mes, ano),
   ])
 
+  const totalPages     = Math.ceil(total / PAGE_SIZE)
   const totalInvestimento = Number(totais._sum.investimento ?? 0)
-  const totalAlcance      = totais._sum.alcance  ?? 0
-  const totalCliques      = totais._sum.cliques  ?? 0
+  const totalAlcance      = totais._sum.alcance ?? 0
+  const totalCliques      = totais._sum.cliques ?? 0
+  const cpl = totalLeads > 0 ? totalInvestimento / totalLeads : null
 
   return (
     <div className="space-y-6">
@@ -56,17 +84,17 @@ export default async function CampanhasPage() {
             Campanhas Meta Ads
           </h2>
           <p className="text-muted-foreground text-sm">
-            {campanhas.length} campanhas sincronizadas
+            {total} campanha{total !== 1 ? "s" : ""} no período
           </p>
         </div>
         {papel === "ADMIN" && (
-          <form action="/api/integracoes/meta/sync" method="POST">
-            <Button variant="outline" size="sm" type="submit">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sincronizar
-            </Button>
-          </form>
+          <SyncButton endpoint="/api/integracoes/meta/sync" label="Sincronizar" />
         )}
+      </div>
+
+      {/* Filtro de período */}
+      <div className="flex items-center gap-3">
+        <PeriodoFilter deParam={deParam} ateParam={ateParam} />
       </div>
 
       {/* KPIs */}
@@ -93,12 +121,12 @@ export default async function CampanhasPage() {
           iconColor="text-sky-600"
         />
         <KpiCard
-          title="CPL — Mês Atual"
-          value={cpl.cplGeral != null ? formatCurrency(cpl.cplGeral) : "Sem dados"}
+          title="CPL — Período"
+          value={cpl != null ? formatCurrency(cpl) : "Sem dados"}
           icon={TrendingDown}
           iconBg="bg-rose-50"
           iconColor="text-rose-600"
-          subtitle="Investimento ÷ leads do mês"
+          subtitle="Investimento ÷ leads do período"
         />
       </div>
 
@@ -120,10 +148,7 @@ export default async function CampanhasPage() {
             {campanhas.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                  Nenhuma campanha sincronizada.{" "}
-                  <a href="/integracoes/meta" className="underline">
-                    Conecte o Meta Ads
-                  </a>
+                  Nenhuma campanha no período selecionado.
                 </TableCell>
               </TableRow>
             )}
@@ -157,6 +182,14 @@ export default async function CampanhasPage() {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <PaginationNav
+          pagina={pagina}
+          totalPages={totalPages}
+          buildHref={(p) => `?de=${deParam}&ate=${ateParam}&pagina=${p}`}
+        />
+      )}
     </div>
   )
 }

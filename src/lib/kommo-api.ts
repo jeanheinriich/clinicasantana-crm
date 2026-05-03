@@ -12,7 +12,7 @@ type KommoLeadRaw = {
 
 // Mapeamento de status Kommo → StatusLead
 // IDs confirmados via /api/integracoes/kommo/diagnostico-estagios em 2026-05-02
-const KOMMO_STATUS_MAP: Record<number, StatusLead> = {
+export const KOMMO_STATUS_MAP: Record<number, StatusLead> = {
   // ── Funil de vendas (principal) ──────────────────────────────
   91327884: "ABORDAGEM",           // Incoming leads
   91327888: "ABORDAGEM",           // Contato inicial
