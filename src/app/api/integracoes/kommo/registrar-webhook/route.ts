@@ -1,23 +1,26 @@
-import { auth } from "@/auth"
+import { NextRequest, NextResponse } from "next/server"
+import { getToken } from "next-auth/jwt"
 import { prisma } from "@/lib/prisma"
+
+export const dynamic = "force-dynamic"
 
 const WEBHOOK_EVENTS = ["add_lead", "update_lead", "status_lead", "add_note"]
 
-export async function POST(req: Request) {
-  const session = await auth()
-  if (!session?.user || session.user.papel !== "ADMIN") {
-    return Response.redirect(new URL("/integracoes/kommo?erro=sem-permissao", new URL(req.url).origin))
+export async function POST(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET })
+  if (!token || token.papel !== "ADMIN") {
+    return NextResponse.redirect(new URL("/integracoes/kommo?erro=sem-permissao", req.url))
   }
 
   const config = await prisma.integracaoConfig.findUnique({ where: { servico: "KOMMO" } })
   if (!config?.accessToken) {
-    return Response.redirect(new URL("/integracoes/kommo?erro=token-nao-configurado", new URL(req.url).origin))
+    return NextResponse.redirect(new URL("/integracoes/kommo?erro=token-nao-configurado", req.url))
   }
 
   const subdomain = process.env.KOMMO_SUBDOMAIN
   const baseUrl   = process.env.NEXT_PUBLIC_BASE_URL
   if (!subdomain || !baseUrl) {
-    return Response.redirect(new URL("/integracoes/kommo?erro=variaveis-nao-configuradas", new URL(req.url).origin))
+    return NextResponse.redirect(new URL("/integracoes/kommo?erro=variaveis-nao-configuradas", req.url))
   }
 
   try {
@@ -34,24 +37,20 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      // Kommo retorna validation-errors quando o plano não permite webhooks
-      const msg =
-        (err as { detail?: string })?.detail ??
-        "erro-kommo"
-      return Response.redirect(
-        new URL(`/integracoes/kommo?erro=${encodeURIComponent(msg)}`, new URL(req.url).origin)
+      const msg = (err as { detail?: string })?.detail ?? "erro-kommo"
+      return NextResponse.redirect(
+        new URL(`/integracoes/kommo?erro=${encodeURIComponent(msg)}`, req.url)
       )
     }
 
-    // Salva flag no extraData para mostrar status na página
     const extraData = (config.extraData as Record<string, unknown> | null) ?? {}
     await prisma.integracaoConfig.update({
       where: { servico: "KOMMO" },
       data: { extraData: JSON.stringify({ ...extraData, webhookRegistrado: true }) },
     })
 
-    return Response.redirect(new URL("/integracoes/kommo?sucesso=webhook-registrado", new URL(req.url).origin))
+    return NextResponse.redirect(new URL("/integracoes/kommo?sucesso=webhook-registrado", req.url))
   } catch {
-    return Response.redirect(new URL("/integracoes/kommo?erro=falha-ao-registrar", new URL(req.url).origin))
+    return NextResponse.redirect(new URL("/integracoes/kommo?erro=falha-ao-registrar", req.url))
   }
 }
