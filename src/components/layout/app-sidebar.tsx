@@ -33,16 +33,19 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, modulo: "dashboard" },
-  { href: "/leads", label: "Leads", icon: Users, modulo: "leads" },
-  { href: "/consultas", label: "Consultas", icon: Calendar, modulo: "consultas" },
-  { href: "/financeiro/metas", label: "Metas Financeiras", icon: TrendingUp, modulo: "financeiro" },
-  { href: "/indicadores/comercial", label: "Indicadores Comerciais", icon: BarChart3, modulo: "indicadores" },
-  { href: "/indicadores/conversao", label: "Indicadores de Conversão", icon: ArrowRightLeft, modulo: "indicadores" },
-  { href: "/campanhas", label: "Campanhas Meta", icon: Megaphone, modulo: "campanhas" },
-  { href: "/integracoes/meta",  label: "Meta Ads",   icon: Megaphone, modulo: "integracoes" },
-  { href: "/integracoes/kommo", label: "Kommo CRM",  icon: Plug,      modulo: "integracoes" },
-  { href: "/usuarios", label: "Usuários", icon: UserCog, modulo: "usuarios" },
+  { href: "/dashboard",              label: "Dashboard",                 icon: LayoutDashboard, modulo: "dashboard"   },
+  { href: "/leads",                  label: "Leads",                     icon: Users,           modulo: "leads"       },
+  { href: "/consultas",              label: "Consultas",                 icon: Calendar,        modulo: "consultas"   },
+  { href: "/financeiro/metas",       label: "Metas Financeiras",         icon: TrendingUp,      modulo: "financeiro"  },
+  { href: "/indicadores/comercial",  label: "Indicadores Comerciais",    icon: BarChart3,       modulo: "indicadores" },
+  { href: "/indicadores/conversao",  label: "Indicadores de Conversão",  icon: ArrowRightLeft,  modulo: "indicadores" },
+  { href: "/campanhas",              label: "Campanhas Meta",            icon: Megaphone,       modulo: "campanhas"   },
+  { href: "/usuarios",               label: "Usuários",                  icon: UserCog,         modulo: "usuarios"    },
+]
+
+const INTEGRACOES_ITEMS: NavItem[] = [
+  { href: "/integracoes/meta",  label: "Meta Ads",  icon: Megaphone, modulo: "integracoes" },
+  { href: "/integracoes/kommo", label: "Kommo CRM", icon: Plug,      modulo: "integracoes" },
 ]
 
 interface AppSidebarProps {
@@ -63,6 +66,18 @@ function NavContent({ papel, nomeUsuario, onNavigate }: NavContentProps) {
   const visibleItems = NAV_ITEMS.filter((item) =>
     temPermissao(papel, item.modulo, "view")
   )
+  const showIntegracoes = temPermissao(papel, "integracoes", "view")
+
+  const linkClass = (href: string) => {
+    const isActive = pathname === href || pathname.startsWith(href + "/")
+    return [
+      "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors duration-150",
+      "border-l-2",
+      isActive
+        ? "border-[hsl(36,55%,45%)] bg-[hsl(36,45%,92%)] text-[hsl(30,20%,15%)] font-medium rounded-l-none pl-[calc(0.75rem-2px)]"
+        : "border-transparent text-[hsl(30,10%,45%)] hover:bg-[hsl(36,20%,93%)] hover:text-[hsl(30,15%,20%)]",
+    ].join(" ")
+  }
 
   return (
     <>
@@ -77,27 +92,41 @@ function NavContent({ papel, nomeUsuario, onNavigate }: NavContentProps) {
         <ul className="space-y-0.5 px-2">
           {visibleItems.map((item) => {
             const Icon = item.icon
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/")
             return (
               <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={onNavigate}
-                  className={[
-                    "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors duration-150",
-                    "border-l-2",
-                    isActive
-                      ? "border-[hsl(36,55%,45%)] bg-[hsl(36,45%,92%)] text-[hsl(30,20%,15%)] font-medium rounded-l-none pl-[calc(0.75rem-2px)]"
-                      : "border-transparent text-[hsl(30,10%,45%)] hover:bg-[hsl(36,20%,93%)] hover:text-[hsl(30,15%,20%)]",
-                  ].join(" ")}
-                >
+                <Link href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
                   <Icon className="h-4 w-4 shrink-0" />
                   <span>{item.label}</span>
                 </Link>
               </li>
             )
           })}
+
+          {showIntegracoes && (
+            <>
+              {/* Separador visual */}
+              <li className="pt-2 pb-0.5">
+                <div className="flex items-center gap-1.5 px-3 py-1">
+                  <Plug className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase">
+                    Integrações
+                  </span>
+                </div>
+              </li>
+              {INTEGRACOES_ITEMS.map((item) => {
+                const Icon = item.icon
+                return (
+                  <li key={item.href}>
+                    <Link href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
+                      <span className="w-4 flex justify-center shrink-0 text-muted-foreground/40 text-xs">└</span>
+                      <Icon className="h-3.5 w-3.5 shrink-0" />
+                      <span>{item.label}</span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </>
+          )}
         </ul>
       </nav>
 

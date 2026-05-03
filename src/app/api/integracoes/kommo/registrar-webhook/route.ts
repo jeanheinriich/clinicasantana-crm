@@ -23,6 +23,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL("/integracoes/kommo?erro=variaveis-nao-configuradas", req.url))
   }
 
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15_000)
+
   try {
     const res = await fetch(`https://${subdomain}.kommo.com/api/v4/webhooks`, {
       method: "POST",
@@ -33,7 +36,9 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify([
         { url: `${baseUrl}/api/webhooks/kommo`, events: WEBHOOK_EVENTS },
       ]),
+      signal: controller.signal,
     })
+    clearTimeout(timeout)
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
@@ -50,7 +55,9 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.redirect(new URL("/integracoes/kommo?sucesso=webhook-registrado", req.url))
-  } catch {
-    return NextResponse.redirect(new URL("/integracoes/kommo?erro=falha-ao-registrar", req.url))
+  } catch (e) {
+    clearTimeout(timeout)
+    const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : "falha-ao-registrar"
+    return NextResponse.redirect(new URL(`/integracoes/kommo?erro=${msg}`, req.url))
   }
 }
