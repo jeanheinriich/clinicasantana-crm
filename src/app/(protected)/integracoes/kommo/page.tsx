@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth-cache"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { temPermissao } from "@/lib/permissions"
@@ -22,7 +22,7 @@ export default async function KommoIntegracaoPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario

@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth-cache"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { ConsultaFormDialog } from "@/components/consultas/consulta-form-dialog"
@@ -75,7 +75,7 @@ export default async function ConsultasPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario

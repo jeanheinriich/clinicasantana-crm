@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth-cache"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { temPermissao } from "@/lib/permissions"
@@ -19,7 +19,7 @@ import { Megaphone, RefreshCw, DollarSign, Eye, MousePointerClick, TrendingDown 
 import { calcularCPLPorCanal } from "@/lib/calcula-cpl"
 
 export default async function CampanhasPage() {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario

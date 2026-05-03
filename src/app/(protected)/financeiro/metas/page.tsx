@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth-cache"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { MetaFinanceiraForm } from "@/components/financeiro/meta-financeira-form"
@@ -13,7 +13,7 @@ const MESES = [
 ]
 
 export default async function MetasPage() {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario

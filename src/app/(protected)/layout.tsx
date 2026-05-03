@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth-cache"
 import { redirect } from "next/navigation"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
@@ -10,7 +10,7 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user) redirect("/login")
 
   return (

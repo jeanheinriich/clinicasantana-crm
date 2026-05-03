@@ -1,4 +1,4 @@
-import { auth } from "@/auth"
+import { getSession } from "@/lib/auth-cache"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { LeadFormDialog } from "@/components/leads/lead-form-dialog"
@@ -54,7 +54,7 @@ export default async function LeadsPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const session = await auth()
+  const session = await getSession()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario
