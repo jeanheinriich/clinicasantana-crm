@@ -10,7 +10,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { formatDateTime } from "@/lib/utils"
 import { Plug, RefreshCw } from "lucide-react"
 
-interface SearchParams { sucesso?: string; erro?: string }
+interface SearchParams { sucesso?: string; erro?: string; }
+
+const SUCESSO_MSG: Record<string, string> = {
+  "conectado":         "Kommo conectado com sucesso!",
+  "webhook-registrado": "Webhook registrado no Kommo com sucesso!",
+}
 
 export default async function KommoIntegracaoPage({
   searchParams,
@@ -37,6 +42,7 @@ export default async function KommoIntegracaoPage({
 
   const extraData = config?.extraData as Record<string, unknown> | null
   const lastPollAt = extraData?.lastPollAt ? new Date(String(extraData.lastPollAt)) : null
+  const webhookRegistrado = extraData?.webhookRegistrado === true
 
   const diasParaExpirar = config?.expiresAt
     ? Math.floor((config.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -56,7 +62,7 @@ export default async function KommoIntegracaoPage({
 
       {params.sucesso && (
         <Alert style={{ borderColor: "var(--status-ok-border)", backgroundColor: "var(--status-ok-bg)", color: "var(--status-ok)" }}>
-          <AlertDescription>Kommo conectado com sucesso!</AlertDescription>
+          <AlertDescription>{SUCESSO_MSG[params.sucesso] ?? "Operação realizada com sucesso!"}</AlertDescription>
         </Alert>
       )}
       {params.erro && (
@@ -119,21 +125,36 @@ export default async function KommoIntegracaoPage({
         </CardContent>
       </Card>
 
-      {/* Instruções de webhook */}
+      {/* Webhook */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Webhook Kommo</CardTitle>
+          <CardTitle className="text-sm">Webhook em Tempo Real</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          <p className="text-muted-foreground">
-            Configure o webhook no painel do Kommo para receber atualizações em tempo real:
-          </p>
-          <div className="bg-muted rounded p-3 font-mono text-xs break-all">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: webhookRegistrado ? "var(--status-ok)" : "var(--muted-foreground)" }}
+              />
+              <span className="text-sm font-medium">
+                {webhookRegistrado ? "Webhook ativo" : "Webhook não registrado"}
+              </span>
+            </div>
+            {isConnected && papel === "ADMIN" && (
+              <form action="/api/integracoes/kommo/registrar-webhook" method="POST">
+                <Button variant="outline" size="sm" type="submit">
+                  {webhookRegistrado ? "Re-registrar" : "Registrar Webhook"}
+                </Button>
+              </form>
+            )}
+          </div>
+          <div className="bg-muted rounded p-3 font-mono text-xs break-all text-muted-foreground">
             {baseUrl}/api/webhooks/kommo
           </div>
           <p className="text-xs text-muted-foreground">
-            Eventos suportados: <strong>leads.add</strong>, <strong>leads.update</strong>,{" "}
-            <strong>leads.status</strong>, <strong>note.lead</strong>
+            Eventos: <strong>leads.add</strong>, <strong>leads.update</strong>,{" "}
+            <strong>leads.status</strong>, <strong>notes.add</strong>
           </p>
         </CardContent>
       </Card>
