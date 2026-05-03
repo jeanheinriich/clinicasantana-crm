@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth-cache"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { temPermissao } from "@/lib/permissions"
@@ -24,7 +24,7 @@ export default async function KommoIntegracaoPage({
 }) {
   // Sessão e DB em paralelo — middleware já validou o token
   const [session, config, params] = await Promise.all([
-    getSession(),
+    auth(),
     prisma.integracaoConfig.findUnique({ where: { servico: "KOMMO" } }),
     searchParams,
   ])

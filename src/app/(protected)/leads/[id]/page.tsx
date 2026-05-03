@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth-cache"
+import { auth } from "@/auth"
 import { redirect, notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { LeadStatusBadge } from "@/components/leads/lead-status-badge"
@@ -30,7 +30,7 @@ export default async function LeadDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  const session = await getSession()
+  const session = await auth()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario

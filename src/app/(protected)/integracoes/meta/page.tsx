@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth-cache"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { temPermissao } from "@/lib/permissions"
@@ -27,7 +27,7 @@ export default async function MetaIntegracaoPage({
 }) {
   // Sessão, DB e searchParams em paralelo — middleware já validou o token
   const [session, config, campanhas, params] = await Promise.all([
-    getSession(),
+    auth(),
     prisma.integracaoConfig.findUnique({ where: { servico: "META" } }),
     prisma.metaCampanha.findMany({
       orderBy: { sincronizadoEm: "desc" },

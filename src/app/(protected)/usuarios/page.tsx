@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth-cache"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { UsuarioFormDialog } from "@/components/usuarios/usuario-form-dialog"
@@ -25,7 +25,7 @@ const PAPEL_LABELS: Record<PapelUsuario, string> = {
 }
 
 export default async function UsuariosPage() {
-  const session = await getSession()
+  const session = await auth()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario

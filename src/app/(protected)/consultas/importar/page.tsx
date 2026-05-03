@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth-cache"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { ImportConsultasDialog } from "@/components/consultas/import-consultas-dialog"
 import { temPermissao } from "@/lib/permissions"
@@ -8,7 +8,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export default async function ImportarConsultasPage() {
-  const session = await getSession()
+  const session = await auth()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario

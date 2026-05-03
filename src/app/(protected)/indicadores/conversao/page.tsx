@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth-cache"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { temPermissao } from "@/lib/permissions"
@@ -30,7 +30,7 @@ export default async function IndicadorConversaoPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const session = await getSession()
+  const session = await auth()
   if (!session?.user) redirect("/login")
 
   const papel = session.user.papel as PapelUsuario

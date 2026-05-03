@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth-cache"
+import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { MonthNav } from "@/components/dashboard/month-nav"
@@ -36,7 +36,7 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const session = await getSession()
+  const session = await auth()
   if (!session?.user) redirect("/login")
 
   const hoje = new Date()
