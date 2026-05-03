@@ -106,6 +106,7 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
   const res = await fetch(url.toString())
   if (!res.ok) {
     const err = await res.json()
+    console.error("[Meta syncCampanhas] erro API:", JSON.stringify(err))
     throw new Error(err.error?.message ?? "Falha ao buscar campanhas Meta")
   }
 
