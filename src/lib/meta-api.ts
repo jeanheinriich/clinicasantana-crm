@@ -11,8 +11,6 @@ export interface MetaCampanhaData {
   alcance: number
   impressoes: number
   cliques: number
-  leadsGerados: number
-  custoPorLead: number | null
   dataInicio: Date | null
   dataFim: Date | null
 }
@@ -123,8 +121,6 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
       alcance: parseInt(insights.reach ?? "0", 10),
       impressoes: parseInt(insights.impressions ?? "0", 10),
       cliques: parseInt(insights.clicks ?? "0", 10),
-      leadsGerados: 0,
-      custoPorLead: null,
       dataInicio: c.start_time ? new Date(String(c.start_time)) : null,
       dataFim: c.stop_time ? new Date(String(c.stop_time)) : null,
     }

@@ -10,6 +10,7 @@ import { FunilSection } from "@/components/dashboard/funil-section"
 import { FaturamentoLineChart } from "@/components/dashboard/faturamento-line-chart"
 import { LeadsBarChart } from "@/components/dashboard/leads-bar-chart"
 import { calcularIndicadoresConversao } from "@/lib/calcula-indicadores-conversao"
+import { calcularCPLPorCanal } from "@/lib/calcula-cpl"
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -48,6 +49,7 @@ export default async function DashboardPage({
     consultasAggregate,
     indicadorComercial,
     conversao,
+    cpl,
     realizadosPorMes,
     leadsPorCanalRaw,
   ] = await Promise.all([
@@ -59,6 +61,7 @@ export default async function DashboardPage({
     }),
     prisma.indicadorComercial.findUnique({ where: { mes_ano: { mes, ano } } }),
     calcularIndicadoresConversao(mes, ano),
+    calcularCPLPorCanal(mes, ano),
     prisma.consulta.groupBy({
       by: ["mes"],
       where: { ano, status: "REALIZADA" },
@@ -190,6 +193,7 @@ export default async function DashboardPage({
         realizado={realizado}
         totalQtd={totalQtdConsultas}
         superMeta={metaFinanceira ? Number(metaFinanceira.superMeta) : 0}
+        cplGeral={cpl.cplGeral}
       />
 
       {/* Row 4: Gráficos */}

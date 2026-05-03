@@ -15,6 +15,7 @@ interface FunilSectionProps {
   realizado: number
   totalQtd: number
   superMeta: number
+  cplGeral?: number | null
 }
 
 function taxaColor(taxa: number, limiar: number): string {
@@ -41,6 +42,7 @@ export function FunilSection({
   realizado,
   totalQtd,
   superMeta,
+  cplGeral,
 }: FunilSectionProps) {
   const taxaConvLeads = totalLeads > 0
     ? (consultasAgendadas / totalLeads) * 100
@@ -79,6 +81,11 @@ export function FunilSection({
                 style={{ color: taxaColor(taxaConvLeads, 5) }}
               >
                 {taxaConvLeads.toFixed(1)}% conversão
+              </p>
+            )}
+            {cplGeral != null && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                R$ {cplGeral.toFixed(2).replace(".", ",")} custo/lead
               </p>
             )}
           </CardContent>

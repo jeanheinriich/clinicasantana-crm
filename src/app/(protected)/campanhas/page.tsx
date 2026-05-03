@@ -15,7 +15,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { KpiCard } from "@/components/dashboard/kpi-card"
-import { Megaphone, RefreshCw, DollarSign, Users, Eye, TrendingDown } from "lucide-react"
+import { Megaphone, RefreshCw, DollarSign, Eye, MousePointerClick, TrendingDown } from "lucide-react"
+import { calcularCPLPorCanal } from "@/lib/calcula-cpl"
 
 export default async function CampanhasPage() {
   const session = await auth()
@@ -24,23 +25,27 @@ export default async function CampanhasPage() {
   const papel = session.user.papel as PapelUsuario
   if (!temPermissao(papel, "campanhas", "view")) redirect("/dashboard?erro=sem-permissao")
 
-  const [campanhas, totais] = await Promise.all([
+  const hoje = new Date()
+  const mes  = hoje.getMonth() + 1
+  const ano  = hoje.getFullYear()
+
+  const [campanhas, totais, cpl] = await Promise.all([
     prisma.metaCampanha.findMany({
       orderBy: { sincronizadoEm: "desc" },
     }),
     prisma.metaCampanha.aggregate({
       _sum: {
         investimento: true,
-        leadsGerados: true,
-        alcance: true,
-        cliques: true,
+        alcance:      true,
+        cliques:      true,
       },
     }),
+    calcularCPLPorCanal(mes, ano),
   ])
 
   const totalInvestimento = Number(totais._sum.investimento ?? 0)
-  const totalLeads = totais._sum.leadsGerados ?? 0
-  const cplGeral = totalLeads > 0 ? totalInvestimento / totalLeads : 0
+  const totalAlcance      = totais._sum.alcance  ?? 0
+  const totalCliques      = totais._sum.cliques  ?? 0
 
   return (
     <div className="space-y-6">
@@ -64,12 +69,37 @@ export default async function CampanhasPage() {
         )}
       </div>
 
-      {/* Totais */}
+      {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Investimento Total" value={formatCurrency(totalInvestimento)} icon={DollarSign} iconBg="bg-amber-50" iconColor="text-amber-600" />
-        <KpiCard title="Leads Gerados" value={String(totalLeads)} icon={Users} iconBg="bg-sky-50" iconColor="text-sky-600" />
-        <KpiCard title="Alcance Total" value={(totais._sum.alcance ?? 0).toLocaleString("pt-BR")} icon={Eye} iconBg="bg-violet-50" iconColor="text-violet-600" />
-        <KpiCard title="CPL Médio" value={formatCurrency(cplGeral)} icon={TrendingDown} iconBg="bg-rose-50" iconColor="text-rose-600" />
+        <KpiCard
+          title="Investimento Total"
+          value={formatCurrency(totalInvestimento)}
+          icon={DollarSign}
+          iconBg="bg-amber-50"
+          iconColor="text-amber-600"
+        />
+        <KpiCard
+          title="Alcance Total"
+          value={totalAlcance.toLocaleString("pt-BR")}
+          icon={Eye}
+          iconBg="bg-violet-50"
+          iconColor="text-violet-600"
+        />
+        <KpiCard
+          title="Cliques Totais"
+          value={totalCliques.toLocaleString("pt-BR")}
+          icon={MousePointerClick}
+          iconBg="bg-sky-50"
+          iconColor="text-sky-600"
+        />
+        <KpiCard
+          title="CPL — Mês Atual"
+          value={cpl.cplGeral != null ? formatCurrency(cpl.cplGeral) : "Sem dados"}
+          icon={TrendingDown}
+          iconBg="bg-rose-50"
+          iconColor="text-rose-600"
+          subtitle="Investimento ÷ leads do mês"
+        />
       </div>
 
       {/* Tabela de campanhas */}
@@ -82,15 +112,14 @@ export default async function CampanhasPage() {
               <TableHead className="text-right">Investimento</TableHead>
               <TableHead className="text-right">Alcance</TableHead>
               <TableHead className="text-right">Cliques</TableHead>
-              <TableHead className="text-right">Leads</TableHead>
-              <TableHead className="text-right">CPL</TableHead>
+              <TableHead className="text-right">Impressões</TableHead>
               <TableHead>Início</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {campanhas.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   Nenhuma campanha sincronizada.{" "}
                   <a href="/integracoes/meta" className="underline">
                     Conecte o Meta Ads
@@ -114,10 +143,11 @@ export default async function CampanhasPage() {
                 <TableCell className="text-right">
                   {c.alcance.toLocaleString("pt-BR")}
                 </TableCell>
-                <TableCell className="text-right">{c.cliques.toLocaleString("pt-BR")}</TableCell>
-                <TableCell className="text-right font-semibold">{c.leadsGerados}</TableCell>
                 <TableCell className="text-right">
-                  {c.custoPorLead != null ? formatCurrency(Number(c.custoPorLead)) : "—"}
+                  {c.cliques.toLocaleString("pt-BR")}
+                </TableCell>
+                <TableCell className="text-right">
+                  {c.impressoes.toLocaleString("pt-BR")}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {c.dataInicio ? formatDate(c.dataInicio) : "—"}
