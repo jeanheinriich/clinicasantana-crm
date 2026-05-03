@@ -89,6 +89,14 @@ async function processEvent(payload: KommoWebhookPayload): Promise<void> {
       ? (KOMMO_STATUS_MAP[parseInt(lead.status_id)] ?? "ABORDAGEM")
       : "ABORDAGEM"
 
+    console.log("[Webhook Kommo]", {
+      evento: "leads[add]",
+      leadId: lead.id,
+      statusId: lead.status_id ?? null,
+      statusMapeado: status,
+      timestamp: new Date().toISOString(),
+    })
+
     await prisma.lead.upsert({
       where: { kommoLeadId: String(lead.id) },
       create: {
@@ -115,6 +123,14 @@ async function processEvent(payload: KommoWebhookPayload): Promise<void> {
       ? KOMMO_STATUS_MAP[parseInt(lead.status_id)]
       : undefined
 
+    console.log("[Webhook Kommo]", {
+      evento: "leads[status]",
+      leadId: lead.id,
+      statusId: lead.status_id ?? null,
+      statusMapeado: novoStatus ?? "sem mapeamento",
+      timestamp: new Date().toISOString(),
+    })
+
     // Upsert: cria se o lead chegou antes da integração estar ativa
     await prisma.lead.upsert({
       where: { kommoLeadId: String(lead.id) },
@@ -135,6 +151,11 @@ async function processEvent(payload: KommoWebhookPayload): Promise<void> {
   // Notas → interações
   const notes = payload["note[lead]"] ?? []
   for (const note of notes) {
+    console.log("[Webhook Kommo]", {
+      evento: "note[lead]",
+      leadId: note.element_id,
+      timestamp: new Date().toISOString(),
+    })
     const leadDb = await prisma.lead.findUnique({
       where: { kommoLeadId: String(note.element_id) },
     })
