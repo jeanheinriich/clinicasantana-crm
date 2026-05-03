@@ -28,6 +28,7 @@ import Link from "next/link"
 import { temPermissao } from "@/lib/permissions"
 import type { PapelUsuario, CanalLead, StatusLead } from "@/lib/enums"
 import { Prisma } from "@prisma/client"
+import { PaginationNav } from "@/components/ui/pagination-nav"
 
 const CANAL_LABELS: Record<CanalLead, string> = {
   IMPULSIONAR:      "Impulsionar",
@@ -47,7 +48,7 @@ interface SearchParams {
   pagina?: string
 }
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 8
 
 export default async function LeadsPage({
   searchParams,
@@ -221,30 +222,11 @@ export default async function LeadsPage({
         </Table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
-          <p className="text-muted-foreground">
-            Página {pagina} de {totalPages}
-          </p>
-          <div className="flex gap-2">
-            {pagina > 1 && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`?pagina=${pagina - 1}&q=${params.q ?? ""}&canal=${params.canal ?? ""}&status=${params.status ?? ""}`}>
-                  Anterior
-                </Link>
-              </Button>
-            )}
-            {pagina < totalPages && (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`?pagina=${pagina + 1}&q=${params.q ?? ""}&canal=${params.canal ?? ""}&status=${params.status ?? ""}`}>
-                  Próxima
-                </Link>
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+      <PaginationNav
+        pagina={pagina}
+        totalPages={totalPages}
+        buildHref={(p) => `?pagina=${p}&q=${params.q ?? ""}&canal=${params.canal ?? ""}&status=${params.status ?? ""}`}
+      />
     </div>
   )
 }

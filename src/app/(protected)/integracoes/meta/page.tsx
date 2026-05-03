@@ -18,29 +18,37 @@ import {
 } from "@/components/ui/table"
 import { Megaphone } from "lucide-react"
 import { SyncButton } from "@/components/ui/sync-button"
+import { PaginationNav } from "@/components/ui/pagination-nav"
 
-interface SearchParams { sucesso?: string; erro?: string }
+const PAGE_SIZE = 6
+
+interface SearchParams { sucesso?: string; erro?: string; pagina?: string }
 
 export default async function MetaIntegracaoPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  // Sessão, DB e searchParams em paralelo — middleware já validou o token
-  const [session, config, campanhas, params] = await Promise.all([
+  const params = await searchParams
+  const pagina = Math.max(1, parseInt(params.pagina ?? "1"))
+  const skip = (pagina - 1) * PAGE_SIZE
+
+  const [session, config, campanhas, totalCampanhas] = await Promise.all([
     auth(),
     prisma.integracaoConfig.findUnique({ where: { servico: "META" } }),
     prisma.metaCampanha.findMany({
       orderBy: { sincronizadoEm: "desc" },
-      take: 20,
+      take: PAGE_SIZE,
+      skip,
     }),
-    searchParams,
+    prisma.metaCampanha.count(),
   ])
 
   if (!session?.user) redirect("/login")
   const papel = session.user.papel as PapelUsuario
   if (!temPermissao(papel, "integracoes", "view")) redirect("/dashboard?erro=sem-permissao")
 
+  const totalPages = Math.ceil(totalCampanhas / PAGE_SIZE)
   const isConnected = !!config?.accessToken
   const metaAppId = process.env.META_APP_ID
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
@@ -121,9 +129,12 @@ export default async function MetaIntegracaoPage({
       </Card>
 
       {/* Campanhas */}
-      {campanhas.length > 0 && (
+      {totalCampanhas > 0 && (
         <div>
-          <h3 className="font-semibold mb-3">Campanhas Sincronizadas</h3>
+          <h3 className="font-semibold mb-3">
+            Campanhas Sincronizadas
+            <span className="ml-2 text-sm font-normal text-muted-foreground">({totalCampanhas})</span>
+          </h3>
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -162,6 +173,11 @@ export default async function MetaIntegracaoPage({
               </TableBody>
             </Table>
           </div>
+          <PaginationNav
+            pagina={pagina}
+            totalPages={totalPages}
+            buildHref={(p) => `?pagina=${p}`}
+          />
         </div>
       )}
     </div>
