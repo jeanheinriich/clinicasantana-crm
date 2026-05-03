@@ -19,7 +19,6 @@ export async function GET(req: Request) {
     }
 
     const result = await pollKommoLeads(admin.id)
-    console.log("[cron/kommo-poll]", result)
     return Response.json({ sucesso: true, ...result })
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Erro no cron Kommo poll"

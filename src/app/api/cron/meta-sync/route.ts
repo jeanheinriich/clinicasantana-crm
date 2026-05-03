@@ -8,7 +8,6 @@ export async function GET(req: Request) {
 
   try {
     const result = await syncCampanhas()
-    console.log("[cron/meta-sync]", result)
     return Response.json({ sucesso: true, ...result })
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Erro no cron Meta sync"
