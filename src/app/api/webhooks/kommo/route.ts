@@ -18,7 +18,6 @@ const KOMMO_STATUS_MAP: Record<number, StatusLead> = {
   143:      "LEAD_PERDIDO",
 }
 
-// Kommo webhook events
 interface KommoWebhookPayload {
   leads?: {
     add?: KommoLeadEvent[]
@@ -36,13 +35,39 @@ interface KommoLeadEvent {
   name: string
   status_id?: string
   pipeline_id?: string
-  tags?: string
 }
 
 interface KommoNoteEvent {
   id: string
   element_id: string
   text: string
+}
+
+// Kommo envia application/x-www-form-urlencoded com notação PHP de arrays:
+// leads[add][0][id]=123&leads[add][0][name]=Teste
+// Object.fromEntries não resolve — precisa de parser que recrie a estrutura.
+function parseKommoBody(rawBody: string, contentType: string): KommoWebhookPayload {
+  if (contentType.includes("application/json")) {
+    return JSON.parse(rawBody) as KommoWebhookPayload
+  }
+
+  const params = new URLSearchParams(rawBody)
+  const events: Record<string, Record<string, string>[]> = {}
+
+  for (const [key, value] of params.entries()) {
+    // Padrão: leads[add][0][id], note[lead][0][element_id], etc.
+    const m = key.match(/^([a-z]+\[[a-z_]+\])\[(\d+)\]\[([a-z_]+)\]$/)
+    if (!m) continue
+
+    const [, eventKey, idxStr, field] = m
+    const idx = parseInt(idxStr, 10)
+
+    if (!events[eventKey]) events[eventKey] = []
+    if (!events[eventKey][idx]) events[eventKey][idx] = {}
+    events[eventKey][idx][field] = value
+  }
+
+  return events as unknown as KommoWebhookPayload
 }
 
 async function getAdminUserId(): Promise<string | null> {
@@ -60,12 +85,16 @@ async function processEvent(payload: KommoWebhookPayload): Promise<void> {
   // Novos leads
   const newLeads = payload.leads?.add ?? payload["leads[add]"] ?? []
   for (const lead of newLeads) {
+    const status: StatusLead = lead.status_id
+      ? (KOMMO_STATUS_MAP[parseInt(lead.status_id)] ?? "ABORDAGEM")
+      : "ABORDAGEM"
+
     await prisma.lead.upsert({
       where: { kommoLeadId: String(lead.id) },
       create: {
         nome: lead.name || `Lead #${lead.id}`,
         canal: "LINK" as CanalLead,
-        status: "ABORDAGEM" as StatusLead,
+        status,
         kommoLeadId: String(lead.id),
         userId,
       },
@@ -73,7 +102,7 @@ async function processEvent(payload: KommoWebhookPayload): Promise<void> {
     })
   }
 
-  // Atualização de status
+  // Mudança de estágio ou atualização de lead
   const updatedLeads = [
     ...(payload.leads?.update ?? []),
     ...(payload.leads?.status ?? []),
@@ -85,9 +114,18 @@ async function processEvent(payload: KommoWebhookPayload): Promise<void> {
     const novoStatus = lead.status_id
       ? KOMMO_STATUS_MAP[parseInt(lead.status_id)]
       : undefined
-    await prisma.lead.updateMany({
+
+    // Upsert: cria se o lead chegou antes da integração estar ativa
+    await prisma.lead.upsert({
       where: { kommoLeadId: String(lead.id) },
-      data: {
+      create: {
+        nome: lead.name || `Lead #${lead.id}`,
+        canal: "LINK" as CanalLead,
+        status: novoStatus ?? "ABORDAGEM",
+        kommoLeadId: String(lead.id),
+        userId,
+      },
+      update: {
         dataUltimaInteracao: new Date(),
         ...(novoStatus ? { status: novoStatus } : {}),
       },
@@ -120,7 +158,6 @@ export async function POST(req: Request) {
   const rawBody = await req.text()
   const signature = req.headers.get("x-kommo-signature") ?? ""
 
-  // Verificação HMAC-SHA1
   const expected = createHmac("sha1", secret).update(rawBody).digest("hex")
   try {
     if (!timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(signature, "hex"))) {
@@ -132,20 +169,12 @@ export async function POST(req: Request) {
 
   let payload: KommoWebhookPayload
   try {
-    // Kommo pode enviar form-encoded ou JSON
     const contentType = req.headers.get("content-type") ?? ""
-    if (contentType.includes("application/json")) {
-      payload = JSON.parse(rawBody)
-    } else {
-      // application/x-www-form-urlencoded
-      const params = new URLSearchParams(rawBody)
-      payload = Object.fromEntries(params.entries()) as KommoWebhookPayload
-    }
+    payload = parseKommoBody(rawBody, contentType)
   } catch {
     return new Response("Payload inválido", { status: 400 })
   }
 
-  // Processa assincronamente (não bloqueia a resposta)
   processEvent(payload).catch(console.error)
 
   return new Response("OK", { status: 200 })
