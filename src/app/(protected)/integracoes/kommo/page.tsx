@@ -22,14 +22,16 @@ export default async function KommoIntegracaoPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const session = await getSession()
-  if (!session?.user) redirect("/login")
+  // Sessão e DB em paralelo — middleware já validou o token
+  const [session, config, params] = await Promise.all([
+    getSession(),
+    prisma.integracaoConfig.findUnique({ where: { servico: "KOMMO" } }),
+    searchParams,
+  ])
 
+  if (!session?.user) redirect("/login")
   const papel = session.user.papel as PapelUsuario
   if (!temPermissao(papel, "integracoes", "view")) redirect("/dashboard?erro=sem-permissao")
-
-  const params = await searchParams
-  const config = await prisma.integracaoConfig.findUnique({ where: { servico: "KOMMO" } })
 
   const isConnected = !!config?.accessToken
   const subdomain = process.env.KOMMO_SUBDOMAIN

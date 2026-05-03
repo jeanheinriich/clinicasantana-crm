@@ -25,21 +25,20 @@ export default async function MetaIntegracaoPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const session = await getSession()
-  if (!session?.user) redirect("/login")
-
-  const papel = session.user.papel as PapelUsuario
-  if (!temPermissao(papel, "integracoes", "view")) redirect("/dashboard?erro=sem-permissao")
-
-  const params = await searchParams
-
-  const [config, campanhas] = await Promise.all([
+  // Sessão, DB e searchParams em paralelo — middleware já validou o token
+  const [session, config, campanhas, params] = await Promise.all([
+    getSession(),
     prisma.integracaoConfig.findUnique({ where: { servico: "META" } }),
     prisma.metaCampanha.findMany({
       orderBy: { sincronizadoEm: "desc" },
       take: 20,
     }),
+    searchParams,
   ])
+
+  if (!session?.user) redirect("/login")
+  const papel = session.user.papel as PapelUsuario
+  if (!temPermissao(papel, "integracoes", "view")) redirect("/dashboard?erro=sem-permissao")
 
   const isConnected = !!config?.accessToken
   const metaAppId = process.env.META_APP_ID
