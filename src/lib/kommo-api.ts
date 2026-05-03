@@ -110,26 +110,31 @@ export async function pollKommoLeads(userId: string): Promise<{ upserted: number
     const data = await res.json()
     const leads: KommoLeadRaw[] = data._embedded?.leads ?? []
 
-    for (const lead of leads) {
-      const canal = inferCanal(lead)
-      const status = inferStatus(lead)
-
-      await prisma.lead.upsert({
-        where: { kommoLeadId: String(lead.id) },
-        create: {
-          nome: lead.name || `Lead #${lead.id}`,
-          canal,
-          status,
-          kommoLeadId: String(lead.id),
-          userId,
-        },
-        update: {
-          nome: lead.name || `Lead #${lead.id}`,
-          status,
-          dataUltimaInteracao: new Date(lead.updated_at * 1000),
-        },
-      })
-      totalUpserted++
+    // Upserts em paralelo (lotes de 20 para não saturar o pool)
+    const BATCH = 20
+    for (let i = 0; i < leads.length; i += BATCH) {
+      await Promise.all(
+        leads.slice(i, i + BATCH).map((lead) => {
+          const canal = inferCanal(lead)
+          const status = inferStatus(lead)
+          return prisma.lead.upsert({
+            where: { kommoLeadId: String(lead.id) },
+            create: {
+              nome: lead.name || `Lead #${lead.id}`,
+              canal,
+              status,
+              kommoLeadId: String(lead.id),
+              userId,
+            },
+            update: {
+              nome: lead.name || `Lead #${lead.id}`,
+              status,
+              dataUltimaInteracao: new Date(lead.updated_at * 1000),
+            },
+          })
+        })
+      )
+      totalUpserted += Math.min(BATCH, leads.length - i)
     }
 
     // Verifica se há próxima página
