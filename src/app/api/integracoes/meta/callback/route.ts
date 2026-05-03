@@ -1,6 +1,5 @@
 import { auth } from "@/auth"
 import { exchangeCodeForToken } from "@/lib/meta-api"
-import { redirect } from "next/navigation"
 
 export async function GET(req: Request) {
   const session = await auth()
