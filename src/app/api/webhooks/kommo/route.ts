@@ -156,6 +156,12 @@ export async function POST(req: Request) {
   }
 
   const rawBody = await req.text()
+
+  // Ping de verificação do Kommo (corpo vazio, sem assinatura)
+  if (!rawBody || rawBody.trim() === "") {
+    return new Response("OK", { status: 200 })
+  }
+
   const signature = req.headers.get("x-kommo-signature") ?? ""
 
   const expected = createHmac("sha1", secret).update(rawBody).digest("hex")
