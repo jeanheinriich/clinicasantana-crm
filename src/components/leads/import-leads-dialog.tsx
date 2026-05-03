@@ -3,8 +3,9 @@
 import { useState, useRef } from "react"
 import { toast } from "sonner"
 import * as XLSX from "xlsx"
-import { importLeadsAction, type LeadImportRow } from "@/actions/leads/import"
-import { LeadImportRowSchema } from "@/actions/leads/import"
+import { importLeadsAction } from "@/actions/leads/import"
+import { LeadImportRowSchema } from "@/actions/leads/import/schema"
+import type { LeadImportRow } from "@/actions/leads/import/schema"
 import {
   Dialog,
   DialogContent,

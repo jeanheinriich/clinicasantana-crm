@@ -3,8 +3,9 @@
 import { useState, useRef } from "react"
 import { toast } from "sonner"
 import * as XLSX from "xlsx"
-import { importConsultasAction, ConsultaImportRowSchema } from "@/actions/consultas/import"
-import type { ConsultaImportRow } from "@/actions/consultas/import"
+import { importConsultasAction } from "@/actions/consultas/import"
+import { ConsultaImportRowSchema } from "@/actions/consultas/import/schema"
+import type { ConsultaImportRow } from "@/actions/consultas/import/schema"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -75,7 +76,9 @@ function parseRows(raw: Record<string, unknown>[]): ParsedRow[] {
 
     // Normaliza enums
     if (mapped.origem) {
-      mapped.origem = String(mapped.origem).toUpperCase().replace(/\s+/g, "_").replace(/ÃO/, "AO")
+      mapped.origem = String(mapped.origem)
+        .normalize("NFD").replace(/[̀-ͯ]/g, "") // remove acentos
+        .toUpperCase().replace(/\s+/g, "_")
     }
     if (mapped.status) {
       const s = String(mapped.status).toUpperCase()
@@ -182,7 +185,11 @@ export function ImportConsultasDialog({ inline = false }: { inline?: boolean }) 
                     className={row._error ? "bg-red-50 dark:bg-red-950/20" : ""}
                   >
                     <TableCell>{String(row.nomeCliente ?? "—")}</TableCell>
-                    <TableCell>{String(row.dataConsulta ?? "—")}</TableCell>
+                    <TableCell>
+                      {row.dataConsulta instanceof Date
+                        ? row.dataConsulta.toLocaleDateString("pt-BR")
+                        : String(row.dataConsulta ?? "—")}
+                    </TableCell>
                     <TableCell>{String(row.origem ?? "—")}</TableCell>
                     <TableCell>
                       {row.valor != null ? formatCurrency(Number(row.valor)) : "—"}

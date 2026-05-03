@@ -4,29 +4,7 @@ import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { createProtectedAction } from "@/lib/safe-action"
 import { revalidatePath } from "next/cache"
-
-const ConsultaImportRowSchema = z.object({
-  nomeCliente: z.string().min(1),
-  dataConsulta: z.string().transform((v) => new Date(v)),
-  dataPagamento: z
-    .string()
-    .transform((v) => new Date(v))
-    .optional()
-    .nullable(),
-  origem: z.enum(["FC", "LINK", "TRAFEGO", "TRAFEGO_RECORRENCIA", "REMARTIK"]),
-  valor: z
-    .string()
-    .optional()
-    .nullable()
-    .transform((v) => {
-      if (!v) return null
-      const num = parseFloat(v.replace(/[R$\s.]/g, "").replace(",", "."))
-      return isNaN(num) ? null : num
-    }),
-  status: z
-    .enum(["REALIZADA", "CANCELADA", "PENDENTE"])
-    .default("REALIZADA"),
-})
+import { ConsultaImportRowSchema } from "./schema"
 
 const schema = z.object({
   rows: z.array(ConsultaImportRowSchema),
@@ -53,5 +31,4 @@ export const importConsultasAction = createProtectedAction(
   }
 )
 
-export { ConsultaImportRowSchema }
-export type ConsultaImportRow = z.infer<typeof ConsultaImportRowSchema>
+export type { ConsultaImportRow } from "./schema"

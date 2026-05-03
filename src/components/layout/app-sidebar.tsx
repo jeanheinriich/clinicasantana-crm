@@ -94,7 +94,7 @@ function NavContent({ papel, nomeUsuario, onNavigate }: NavContentProps) {
             const Icon = item.icon
             return (
               <li key={item.href}>
-                <Link href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
+                <Link href={item.href} onClick={onNavigate} prefetch={false} className={linkClass(item.href)}>
                   <Icon className="h-4 w-4 shrink-0" />
                   <span>{item.label}</span>
                 </Link>
@@ -117,7 +117,7 @@ function NavContent({ papel, nomeUsuario, onNavigate }: NavContentProps) {
                 const Icon = item.icon
                 return (
                   <li key={item.href}>
-                    <Link href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
+                    <Link href={item.href} onClick={onNavigate} prefetch={false} className={linkClass(item.href)}>
                       <span className="w-4 flex justify-center shrink-0 text-muted-foreground/40 text-xs">└</span>
                       <Icon className="h-3.5 w-3.5 shrink-0" />
                       <span>{item.label}</span>
@@ -150,7 +150,7 @@ export function AppSidebar({ papel, nomeUsuario }: AppSidebarProps) {
   return (
     <>
       {/* Desktop: static flex item — never fixed, never overlaps */}
-      <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col bg-sidebar border-r border-sidebar-border">
+      <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col h-full bg-sidebar border-r border-sidebar-border">
         <NavContent papel={papel} nomeUsuario={nomeUsuario} />
       </aside>
 

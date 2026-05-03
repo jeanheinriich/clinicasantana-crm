@@ -16,6 +16,7 @@ const ORIGEM_LABELS: Record<OrigemConsulta, string> = {
   TRAFEGO: "Tráfego",
   TRAFEGO_RECORRENCIA: "Tráfego Recorrência",
   REMARTIK: "Remartik",
+  IMPULSIONAR: "Impulsionar",
 }
 
 const MESES = [
