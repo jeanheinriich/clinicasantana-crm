@@ -133,24 +133,28 @@ async function processEvent(payload: KommoWebhookPayload): Promise<void> {
     })
   }
 
-  // Notas → interações
+  // Notas → interações (batch para evitar N+1)
   const notes = payload["note[lead]"] ?? []
-  for (const note of notes) {
+  if (notes.length > 0) {
     console.log("[Webhook Kommo]", {
       evento: "note[lead]",
-      leadId: note.element_id,
+      total: notes.length,
       timestamp: new Date().toISOString(),
     })
-    const leadDb = await prisma.lead.findUnique({
-      where: { kommoLeadId: String(note.element_id) },
+    const kommoIds = notes.map((n) => String(n.element_id))
+    const leadsDb = await prisma.lead.findMany({
+      where: { kommoLeadId: { in: kommoIds } },
+      select: { id: true, kommoLeadId: true },
     })
-    if (leadDb) {
-      await prisma.leadInteracao.create({
-        data: {
-          leadId: leadDb.id,
-          descricao: `[Kommo] ${note.text}`,
-        },
-      })
+    const leadMap = new Map(leadsDb.map((l) => [l.kommoLeadId, l.id]))
+    const interacoes = notes
+      .filter((n) => leadMap.has(String(n.element_id)))
+      .map((n) => ({
+        leadId: leadMap.get(String(n.element_id))!,
+        descricao: `[Kommo] ${n.text}`,
+      }))
+    if (interacoes.length > 0) {
+      await prisma.leadInteracao.createMany({ data: interacoes, skipDuplicates: true })
     }
   }
 }
