@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   }
 
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 15_000)
+  const timeout = setTimeout(() => controller.abort(), 7_000)
 
   try {
     const res = await fetch(`https://${subdomain}.kommo.com/api/v4/webhooks`, {

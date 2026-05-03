@@ -17,19 +17,24 @@ export function SyncButton({ endpoint, label = "Sincronizar Agora" }: SyncButton
 
   async function handleClick() {
     setState("loading")
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 12_000)
     try {
-      const res = await fetch(endpoint, { method: "POST" })
-      const data = await res.json()
-      if (!res.ok || data.erro) {
-        setErrorMsg(data.erro ?? "Erro ao sincronizar")
+      const res = await fetch(endpoint, { method: "POST", signal: controller.signal })
+      clearTimeout(timer)
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || (data as { erro?: string }).erro) {
+        setErrorMsg((data as { erro?: string }).erro ?? `Erro ${res.status}`)
         setState("error")
         setTimeout(() => setState("idle"), 5000)
       } else {
         setState("success")
         setTimeout(() => setState("idle"), 3000)
       }
-    } catch {
-      setErrorMsg("Falha na requisição")
+    } catch (e) {
+      clearTimeout(timer)
+      const isTimeout = e instanceof Error && e.name === "AbortError"
+      setErrorMsg(isTimeout ? "Tempo limite excedido" : "Falha na requisição")
       setState("error")
       setTimeout(() => setState("idle"), 5000)
     }
