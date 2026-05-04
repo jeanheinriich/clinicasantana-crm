@@ -93,9 +93,7 @@ export default async function CampanhasPage({
       </div>
 
       {/* Filtro de período */}
-      <div className="flex items-center gap-3">
-        <PeriodoFilter deParam={deParam} ateParam={ateParam} />
-      </div>
+      <PeriodoFilter deParam={deParam} ateParam={ateParam} totalInvestimento={totalInvestimento} />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
