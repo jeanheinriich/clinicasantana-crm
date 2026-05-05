@@ -55,7 +55,7 @@ export default async function DashboardPage({
   ] = await Promise.all([
     prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
     prisma.consulta.aggregate({
-      where: { mes, ano, status: "REALIZADA" },
+      where: { mesPagamento: mes, anoPagamento: ano, dataPagamento: { not: null } },
       _sum: { valor: true },
       _count: true,
     }),
@@ -63,8 +63,8 @@ export default async function DashboardPage({
     calcularIndicadoresConversao(mes, ano),
     calcularCPLPorCanal(mes, ano),
     prisma.consulta.groupBy({
-      by: ["mes"],
-      where: { ano, status: "REALIZADA" },
+      by: ["mesPagamento"],
+      where: { anoPagamento: ano, dataPagamento: { not: null } },
       _sum: { valor: true },
     }),
     prisma.lead.groupBy({
@@ -96,7 +96,7 @@ export default async function DashboardPage({
   // Gráfico de área: Jan → mês selecionado
   const faturamentoMeses = Array.from({ length: mes }, (_, i) => {
     const m = i + 1
-    const val = realizadosPorMes.find((r) => r.mes === m)?._sum.valor
+    const val = realizadosPorMes.find((r) => r.mesPagamento === m)?._sum.valor
     return { mes: MESES_ABREV[i], realizado: val ? Number(val) : null }
   })
 

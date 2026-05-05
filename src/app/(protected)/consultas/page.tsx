@@ -106,7 +106,7 @@ export default async function ConsultasPage({
     }),
     prisma.consulta.count({ where }),
     prisma.consulta.aggregate({
-      where: { ...where, status: "REALIZADA" },
+      where: { ...where, dataPagamento: { not: null } },
       _sum: { valor: true },
     }),
   ])

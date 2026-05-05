@@ -29,8 +29,8 @@ export default async function MetasPage() {
       orderBy: { mes: "asc" },
     }),
     prisma.consulta.groupBy({
-      by: ["mes"],
-      where: { ano, status: "REALIZADA" },
+      by: ["mesPagamento"],
+      where: { anoPagamento: ano, dataPagamento: { not: null } },
       _sum: { valor: true },
     }),
   ])
@@ -45,7 +45,7 @@ export default async function MetasPage() {
   const dadosMensais = Array.from({ length: 12 }, (_, i) => {
     const m = i + 1
     const meta = metas.find((me) => me.mes === m)
-    const realizado = Number(realizados.find((r) => r.mes === m)?._sum.valor ?? 0)
+    const realizado = Number(realizados.find((r) => r.mesPagamento === m)?._sum.valor ?? 0)
     return { mes: m, nomeMes: MESES[i], meta, realizado }
   })
 

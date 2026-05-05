@@ -26,11 +26,14 @@ export const createConsultaAction = createProtectedAction(
   async (input: z.infer<typeof schema>) => {
     const data = schema.parse(input)
     const dataConsulta = data.dataConsulta
+    const dataPagamento = data.dataPagamento ?? null
     const consulta = await prisma.consulta.create({
       data: {
         ...data,
         mes: dataConsulta.getMonth() + 1,
         ano: dataConsulta.getFullYear(),
+        mesPagamento: dataPagamento ? dataPagamento.getMonth() + 1 : null,
+        anoPagamento: dataPagamento ? dataPagamento.getFullYear() : null,
       },
     })
     revalidatePath("/consultas")

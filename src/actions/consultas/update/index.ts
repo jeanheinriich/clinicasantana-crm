@@ -29,15 +29,20 @@ const schema = z.object({
 export const updateConsultaAction = createProtectedAction(
   ["ADMIN", "GESTOR"],
   async (input: z.infer<typeof schema>) => {
-    const { id, dataConsulta, ...data } = schema.parse(input)
+    const { id, dataConsulta, dataPagamento, ...rest } = schema.parse(input)
     const consulta = await prisma.consulta.update({
       where: { id },
       data: {
-        ...data,
+        ...rest,
         ...(dataConsulta && {
           dataConsulta,
           mes: dataConsulta.getMonth() + 1,
           ano: dataConsulta.getFullYear(),
+        }),
+        ...(dataPagamento !== undefined && {
+          dataPagamento,
+          mesPagamento: dataPagamento ? dataPagamento.getMonth() + 1 : null,
+          anoPagamento: dataPagamento ? dataPagamento.getFullYear() : null,
         }),
       },
     })

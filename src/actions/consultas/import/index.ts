@@ -17,9 +17,10 @@ export const importConsultasAction = createProtectedAction(
 
     const consultasToCreate = rows.map((row) => ({
       ...row,
-      dataConsulta: row.dataConsulta,
       mes: row.dataConsulta.getMonth() + 1,
       ano: row.dataConsulta.getFullYear(),
+      mesPagamento: row.dataPagamento ? row.dataPagamento.getMonth() + 1 : null,
+      anoPagamento: row.dataPagamento ? row.dataPagamento.getFullYear() : null,
     }))
 
     const result = await prisma.consulta.createMany({
