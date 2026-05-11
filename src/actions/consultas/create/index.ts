@@ -14,8 +14,9 @@ const schema = z.object({
     .transform((v) => new Date(v))
     .optional()
     .nullable(),
-  origem: z.enum(["FC", "LINK", "TRAFEGO", "TRAFEGO_RECORRENCIA", "REMARTIK"]),
-  valor: z.number().positive().optional().nullable(),
+  origem: z.enum(["FC", "LINK", "TRAFEGO", "RECORRENCIA", "REMARTIK"]),
+  valor: z.number().min(0).optional().nullable(),
+  valorProcedimento: z.number().min(0).optional().nullable(),
   status: z.enum(["REALIZADA", "CANCELADA", "PENDENTE"]).default("PENDENTE"),
   observacoes: z.string().optional(),
   leadId: z.string().optional().nullable(),

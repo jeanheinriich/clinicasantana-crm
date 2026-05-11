@@ -1,8 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { ComercialForm } from "@/components/indicadores/comercial-form"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { calcularIndicadoresComerciais } from "@/lib/calcula-indicadores-comerciais"
+import { Card, CardContent } from "@/components/ui/card"
 import { KpiCard } from "@/components/dashboard/kpi-card"
 import { formatCurrency } from "@/lib/utils"
 import { temPermissao } from "@/lib/permissions"
@@ -18,6 +17,7 @@ const MESES = [
 
 interface SearchParams { mes?: string; ano?: string }
 
+
 export default async function IndicadorComercialPage({
   searchParams,
 }: {
@@ -29,32 +29,18 @@ export default async function IndicadorComercialPage({
   const papel = session.user.papel as PapelUsuario
   if (!temPermissao(papel, "indicadores", "view")) redirect("/dashboard?erro=sem-permissao")
 
-  const podeEditar = temPermissao(papel, "indicadores", "edit")
   const hoje = new Date()
   const params = await searchParams
   const mes = parseInt(params.mes ?? String(hoje.getMonth() + 1))
   const ano = parseInt(params.ano ?? String(hoje.getFullYear()))
 
+  const mesAnt = mes === 1 ? 12 : mes - 1
+  const anoAnt = mes === 1 ? ano - 1 : ano
+
   const [indicador, anterior] = await Promise.all([
-    prisma.indicadorComercial.findUnique({ where: { mes_ano: { mes, ano } } }),
-    prisma.indicadorComercial.findUnique({
-      where: { mes_ano: { mes: mes === 1 ? 12 : mes - 1, ano: mes === 1 ? ano - 1 : ano } },
-    }),
+    calcularIndicadoresComerciais(mes, ano),
+    calcularIndicadoresComerciais(mesAnt, anoAnt),
   ])
-
-  const ticketNovos = indicador && indicador.agendamentosNovosQtd > 0
-    ? Number(indicador.agendamentosNovosValor) / indicador.agendamentosNovosQtd
-    : 0
-  const ticketRec = indicador && indicador.recorrenciaQtd > 0
-    ? Number(indicador.recorrenciaValor) / indicador.recorrenciaQtd
-    : 0
-
-  const ticketNovosAnt = anterior && anterior.agendamentosNovosQtd > 0
-    ? Number(anterior.agendamentosNovosValor) / anterior.agendamentosNovosQtd
-    : 0
-  const ticketRecAnt = anterior && anterior.recorrenciaQtd > 0
-    ? Number(anterior.recorrenciaValor) / anterior.recorrenciaQtd
-    : 0
 
   const anosDisponiveis = Array.from({ length: 5 }, (_, i) => hoje.getFullYear() - 2 + i)
 
@@ -94,32 +80,32 @@ export default async function IndicadorComercialPage({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           title="Agend. Novos (Qtd)"
-          value={String(indicador?.agendamentosNovosQtd ?? 0)}
-          subtitle={`Mês anterior: ${anterior?.agendamentosNovosQtd ?? 0}`}
+          value={String(indicador.agendNovosQtd)}
+          subtitle={`Mês anterior: ${anterior.agendNovosQtd}`}
           icon={Calendar}
           iconBg="bg-amber-50"
           iconColor="text-amber-600"
         />
         <KpiCard
           title="Agend. Novos (Valor)"
-          value={formatCurrency(Number(indicador?.agendamentosNovosValor ?? 0))}
-          subtitle={`Mês anterior: ${formatCurrency(Number(anterior?.agendamentosNovosValor ?? 0))}`}
+          value={formatCurrency(indicador.agendNovosValor)}
+          subtitle={`Mês anterior: ${formatCurrency(anterior.agendNovosValor)}`}
           icon={DollarSign}
           iconBg="bg-emerald-50"
           iconColor="text-emerald-700"
         />
         <KpiCard
           title="Recorrência (Qtd)"
-          value={String(indicador?.recorrenciaQtd ?? 0)}
-          subtitle={`Mês anterior: ${anterior?.recorrenciaQtd ?? 0}`}
+          value={String(indicador.recorrenciaQtd)}
+          subtitle={`Mês anterior: ${anterior.recorrenciaQtd}`}
           icon={RefreshCw}
           iconBg="bg-sky-50"
           iconColor="text-sky-600"
         />
         <KpiCard
           title="Recorrência (Valor)"
-          value={formatCurrency(Number(indicador?.recorrenciaValor ?? 0))}
-          subtitle={`Mês anterior: ${formatCurrency(Number(anterior?.recorrenciaValor ?? 0))}`}
+          value={formatCurrency(indicador.recorrenciaValor)}
+          subtitle={`Mês anterior: ${formatCurrency(anterior.recorrenciaValor)}`}
           icon={BarChart3}
           iconBg="bg-violet-50"
           iconColor="text-violet-600"
@@ -134,8 +120,12 @@ export default async function IndicadorComercialPage({
               <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">Ticket Médio Novos</p>
               <TrendingUp className="h-4 w-4 shrink-0 text-amber-500" />
             </div>
-            <p className="text-3xl font-bold mt-2">{ticketNovos > 0 ? formatCurrency(ticketNovos) : "—"}</p>
-            <p className="text-xs text-muted-foreground mt-1">Mês anterior: {formatCurrency(ticketNovosAnt)}</p>
+            <p className="text-3xl font-bold mt-2">
+              {indicador.agendNovosTicket > 0 ? formatCurrency(indicador.agendNovosTicket) : "—"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Mês anterior: {anterior.agendNovosTicket > 0 ? formatCurrency(anterior.agendNovosTicket) : "—"}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -144,27 +134,15 @@ export default async function IndicadorComercialPage({
               <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">Ticket Médio Recorrência</p>
               <BarChart2 className="h-4 w-4 shrink-0 text-purple-500" />
             </div>
-            <p className="text-3xl font-bold mt-2">{ticketRec > 0 ? formatCurrency(ticketRec) : "—"}</p>
-            <p className="text-xs text-muted-foreground mt-1">Mês anterior: {formatCurrency(ticketRecAnt)}</p>
+            <p className="text-3xl font-bold mt-2">
+              {indicador.recorrenciaTicket > 0 ? formatCurrency(indicador.recorrenciaTicket) : "—"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Mês anterior: {anterior.recorrenciaTicket > 0 ? formatCurrency(anterior.recorrenciaTicket) : "—"}
+            </p>
           </CardContent>
         </Card>
       </div>
-
-      {podeEditar && (
-        <ComercialForm
-          mes={mes}
-          ano={ano}
-          indicador={indicador ? {
-            id: indicador.id,
-            mes: indicador.mes,
-            ano: indicador.ano,
-            agendamentosNovosQtd: indicador.agendamentosNovosQtd,
-            agendamentosNovosValor: Number(indicador.agendamentosNovosValor),
-            recorrenciaQtd: indicador.recorrenciaQtd,
-            recorrenciaValor: Number(indicador.recorrenciaValor),
-          } : null}
-        />
-      )}
     </div>
   )
 }

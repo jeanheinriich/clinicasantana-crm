@@ -2,6 +2,8 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { ConsultaFormDialog } from "@/components/consultas/consulta-form-dialog"
+import { DeleteConsultaButton } from "@/components/consultas/delete-consulta-button"
+import { ObservacaoCell } from "@/components/consultas/observacao-cell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,11 +36,12 @@ const STATUS_VARIANT: Record<StatusConsulta, BadgeVariant> = {
 }
 
 const ORIGEM_STYLE: Record<string, string> = {
-  FC:                  "bg-green-50 text-green-700 border-green-200",
-  LINK:                "bg-orange-50 text-orange-700 border-orange-200",
-  TRAFEGO:             "bg-amber-50 text-amber-700 border-amber-200",
-  TRAFEGO_RECORRENCIA: "bg-amber-50 text-amber-600 border-amber-200",
-  REMARTIK:            "bg-purple-50 text-purple-700 border-purple-200",
+  FC:          "bg-green-50 text-green-700 border-green-200",
+  LINK:        "bg-orange-50 text-orange-700 border-orange-200",
+  TRAFEGO:     "bg-amber-50 text-amber-700 border-amber-200",
+  RECORRENCIA: "bg-blue-50 text-blue-700 border-blue-200",
+  REMARTIK:    "bg-purple-50 text-purple-700 border-purple-200",
+  IMPULSIONAR: "bg-pink-50 text-pink-700 border-pink-200",
 }
 
 const STATUS_LABELS: Record<StatusConsulta, string> = {
@@ -51,7 +54,7 @@ const ORIGEM_LABELS: Record<OrigemConsulta, string> = {
   FC: "FC",
   LINK: "Link",
   TRAFEGO: "Tráfego",
-  TRAFEGO_RECORRENCIA: "Tráfego Rec.",
+  RECORRENCIA: "Recorrência",
   REMARTIK: "Remartik",
   IMPULSIONAR: "Impulsionar",
 }
@@ -96,20 +99,22 @@ export default async function ConsultasPage({
     ...(params.origem && params.origem !== "todos" && { origem: params.origem as OrigemConsulta }),
   }
 
-  const [consultas, total, totalRealizado] = await Promise.all([
+  const [consultasRaw, total, totalRealizado] = await Promise.all([
     prisma.consulta.findMany({
       where,
       orderBy: { dataConsulta: "desc" },
       take: PAGE_SIZE,
       skip,
-      include: { lead: { select: { nome: true } } },
     }),
     prisma.consulta.count({ where }),
     prisma.consulta.aggregate({
-      where: { ...where, dataPagamento: { not: null } },
-      _sum: { valor: true },
+      where: { ...where, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
+      _sum: { valor: true, valorProcedimento: true },
     }),
   ])
+
+  type ConsultaRow = (typeof consultasRaw)[0] & { valorProcedimento: (typeof consultasRaw)[0]["valor"] }
+  const consultas = consultasRaw as ConsultaRow[]
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
   const podeEditar = temPermissao(papel, "consultas", "edit")
@@ -122,7 +127,7 @@ export default async function ConsultasPage({
         <div>
           <h2 className="text-2xl font-bold">Consultas</h2>
           <p className="text-muted-foreground text-sm">
-            {total} consultas | Faturamento: {formatCurrency(Number(totalRealizado._sum.valor ?? 0))}
+            {total} consultas | Faturamento: {formatCurrency(Number(totalRealizado._sum.valor ?? 0) + Number(totalRealizado._sum.valorProcedimento ?? 0))}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -187,7 +192,7 @@ export default async function ConsultasPage({
             <SelectItem value="FC">FC</SelectItem>
             <SelectItem value="LINK">Link</SelectItem>
             <SelectItem value="TRAFEGO">Tráfego</SelectItem>
-            <SelectItem value="TRAFEGO_RECORRENCIA">Tráfego Rec.</SelectItem>
+            <SelectItem value="RECORRENCIA">Recorrência</SelectItem>
             <SelectItem value="REMARTIK">Remartik</SelectItem>
           </SelectContent>
         </Select>
@@ -217,25 +222,30 @@ export default async function ConsultasPage({
                 {ORIGEM_LABELS[c.origem as OrigemConsulta] ?? c.origem}
               </span>
               <span className="text-xs font-medium">{c.valor != null ? formatCurrency(Number(c.valor)) : "—"}</span>
+              <ObservacaoCell observacoes={c.observacoes} />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">{formatDate(c.dataConsulta)}</span>
               {podeEditar && (
-                <ConsultaFormDialog consulta={{
-                  id: c.id,
-                  nomeCliente: c.nomeCliente,
-                  dataConsulta: c.dataConsulta,
-                  dataPagamento: c.dataPagamento,
-                  origem: c.origem,
-                  valor: c.valor != null ? Number(c.valor) : null,
-                  status: c.status,
-                  observacoes: c.observacoes,
-                  mes: c.mes,
-                  ano: c.ano,
-                  leadId: c.leadId,
-                }}>
-                  <Button variant="ghost" size="sm" className="h-8 px-3">Editar</Button>
-                </ConsultaFormDialog>
+                <div className="flex gap-1">
+                  <ConsultaFormDialog consulta={{
+                    id: c.id,
+                    nomeCliente: c.nomeCliente,
+                    dataConsulta: c.dataConsulta,
+                    dataPagamento: c.dataPagamento,
+                    origem: c.origem,
+                    valor: c.valor != null ? Number(c.valor) : null,
+                    valorProcedimento: c.valorProcedimento != null ? Number(c.valorProcedimento) : null,
+                    status: c.status,
+                    observacoes: c.observacoes,
+                    mes: c.mes,
+                    ano: c.ano,
+                    leadId: c.leadId,
+                  }}>
+                    <Button variant="ghost" size="sm" className="h-8 px-3">Editar</Button>
+                  </ConsultaFormDialog>
+                  <DeleteConsultaButton id={c.id} />
+                </div>
               )}
             </div>
           </div>
@@ -253,7 +263,7 @@ export default async function ConsultasPage({
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Origem</TableHead>
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Valor</TableHead>
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Status</TableHead>
-              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Lead</TableHead>
+              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground w-8">Obs</TableHead>
               {podeEditar && <TableHead />}
             </TableRow>
           </TableHeader>
@@ -288,30 +298,30 @@ export default async function ConsultasPage({
                     {STATUS_LABELS[c.status as StatusConsulta] ?? c.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {c.lead ? (
-                    <Link href={`/leads/${c.leadId}`} className="hover:underline">
-                      {c.lead.nome}
-                    </Link>
-                  ) : "—"}
+                <TableCell>
+                  <ObservacaoCell observacoes={c.observacoes} />
                 </TableCell>
                 {podeEditar && (
                   <TableCell>
-                    <ConsultaFormDialog consulta={{
-                        id: c.id,
-                        nomeCliente: c.nomeCliente,
-                        dataConsulta: c.dataConsulta,
-                        dataPagamento: c.dataPagamento,
-                        origem: c.origem,
-                        valor: c.valor != null ? Number(c.valor) : null,
-                        status: c.status,
-                        observacoes: c.observacoes,
-                        mes: c.mes,
-                        ano: c.ano,
-                        leadId: c.leadId,
-                      }}>
-                      <Button variant="ghost" size="sm">Editar</Button>
-                    </ConsultaFormDialog>
+                    <div className="flex gap-1 justify-end">
+                      <ConsultaFormDialog consulta={{
+                          id: c.id,
+                          nomeCliente: c.nomeCliente,
+                          dataConsulta: c.dataConsulta,
+                          dataPagamento: c.dataPagamento,
+                          origem: c.origem,
+                          valor: c.valor != null ? Number(c.valor) : null,
+                          valorProcedimento: c.valorProcedimento != null ? Number(c.valorProcedimento) : null,
+                          status: c.status,
+                          observacoes: c.observacoes,
+                          mes: c.mes,
+                          ano: c.ano,
+                          leadId: c.leadId,
+                        }}>
+                        <Button variant="ghost" size="sm">Editar</Button>
+                      </ConsultaFormDialog>
+                      <DeleteConsultaButton id={c.id} />
+                    </div>
                   </TableCell>
                 )}
               </TableRow>

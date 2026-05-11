@@ -15,8 +15,17 @@ export const ConsultaImportRowSchema = z.object({
     .transform((v) => (v.trim() === "" ? null : parseLocalDate(v)))
     .optional()
     .nullable(),
-  origem: z.enum(["FC", "LINK", "TRAFEGO", "TRAFEGO_RECORRENCIA", "REMARTIK", "IMPULSIONAR"]),
+  origem: z.enum(["FC", "LINK", "TRAFEGO", "RECORRENCIA", "REMARTIK", "IMPULSIONAR"]),
   valor: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => {
+      if (!v) return null
+      const num = parseFloat(v.replace(/[R$\s.]/g, "").replace(",", "."))
+      return isNaN(num) ? null : num
+    }),
+  valorProcedimento: z
     .string()
     .optional()
     .nullable()

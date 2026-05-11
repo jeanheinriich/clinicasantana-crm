@@ -14,7 +14,7 @@ const ORIGEM_LABELS: Record<OrigemConsulta, string> = {
   FC: "FC",
   LINK: "Link",
   TRAFEGO: "Tráfego",
-  TRAFEGO_RECORRENCIA: "Tráfego Recorrência",
+  RECORRENCIA: "Recorrência",
   REMARTIK: "Remartik",
   IMPULSIONAR: "Impulsionar",
 }
