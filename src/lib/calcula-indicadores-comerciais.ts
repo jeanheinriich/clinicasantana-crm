@@ -3,16 +3,22 @@ import { prisma } from "@/lib/prisma"
 export async function calcularIndicadoresComerciais(mes: number, ano: number) {
   const consultas = await prisma.consulta.findMany({
     where: { mesPagamento: mes, anoPagamento: ano, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
-    select: { valor: true, valorProcedimento: true },
+    select: { valor: true, valorProcedimento: true, origem: true },
   })
 
-  const agendNovos   = consultas.filter((c) => Number(c.valor ?? 0) > 0)
-  const recorrencia  = consultas.filter((c) => Number(c.valorProcedimento ?? 0) > 0)
+  const novos      = consultas.filter((c) => c.origem !== "RECORRENCIA" && Number(c.valor ?? 0) > 0)
+  const recorrente = consultas.filter((c) => c.origem === "RECORRENCIA" || Number(c.valorProcedimento ?? 0) > 0)
 
-  const agendNovosQtd    = agendNovos.length
-  const agendNovosValor  = agendNovos.reduce((s, c) => s + Number(c.valor ?? 0), 0)
-  const recorrenciaQtd   = recorrencia.length
-  const recorrenciaValor = recorrencia.reduce((s, c) => s + Number(c.valorProcedimento ?? 0), 0)
+  const agendNovosQtd    = novos.length
+  const agendNovosValor  = novos.reduce((s, c) => s + Number(c.valor ?? 0), 0)
+
+  const recorrenciaQtd   = recorrente.length
+  const recorrenciaValor = recorrente.reduce((s, c) => {
+    if (c.origem === "RECORRENCIA") {
+      return s + Number(c.valor ?? 0) + Number(c.valorProcedimento ?? 0)
+    }
+    return s + Number(c.valorProcedimento ?? 0)
+  }, 0)
 
   return {
     agendNovosQtd,
