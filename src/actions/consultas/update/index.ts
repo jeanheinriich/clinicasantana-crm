@@ -19,7 +19,7 @@ const schema = z.object({
     .transform((v) => new Date(v))
     .optional()
     .nullable(),
-  origem: z.enum(["FC", "LINK", "TRAFEGO", "TRAFEGO_RECORRENCIA", "REMARTIK"]).optional(),
+  origem: z.enum(["FC", "LINK", "TRAFEGO", "RECORRENCIA", "REMARTIK"]).optional(),
   valor: z.number().positive().optional().nullable(),
   status: z.enum(["REALIZADA", "CANCELADA", "PENDENTE"]).optional(),
   observacoes: z.string().optional().nullable(),

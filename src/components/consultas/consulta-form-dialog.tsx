@@ -52,7 +52,7 @@ const schema = z.object({
   nomeCliente: z.string().min(1, "Nome do cliente é obrigatório"),
   dataConsulta: z.string().min(1, "Data da consulta é obrigatória"),
   dataPagamento: z.string().optional(),
-  origem: z.enum(["FC", "LINK", "TRAFEGO", "TRAFEGO_RECORRENCIA", "REMARTIK"]),
+  origem: z.enum(["FC", "LINK", "TRAFEGO", "RECORRENCIA", "REMARTIK"]),
   valor: z.string().optional(),
   status: z.enum(["REALIZADA", "CANCELADA", "PENDENTE"]),
   observacoes: z.string().optional(),
@@ -64,7 +64,7 @@ const ORIGENS = [
   { value: "FC", label: "FC" },
   { value: "LINK", label: "Link" },
   { value: "TRAFEGO", label: "Tráfego" },
-  { value: "TRAFEGO_RECORRENCIA", label: "Tráfego Recorrência" },
+  { value: "RECORRENCIA", label: "Recorrência" },
   { value: "REMARTIK", label: "Remartik" },
 ]
 

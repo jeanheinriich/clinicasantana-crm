@@ -34,11 +34,12 @@ const STATUS_VARIANT: Record<StatusConsulta, BadgeVariant> = {
 }
 
 const ORIGEM_STYLE: Record<string, string> = {
-  FC:                  "bg-green-50 text-green-700 border-green-200",
-  LINK:                "bg-orange-50 text-orange-700 border-orange-200",
-  TRAFEGO:             "bg-amber-50 text-amber-700 border-amber-200",
-  TRAFEGO_RECORRENCIA: "bg-amber-50 text-amber-600 border-amber-200",
-  REMARTIK:            "bg-purple-50 text-purple-700 border-purple-200",
+  FC:          "bg-green-50 text-green-700 border-green-200",
+  LINK:        "bg-orange-50 text-orange-700 border-orange-200",
+  TRAFEGO:     "bg-amber-50 text-amber-700 border-amber-200",
+  RECORRENCIA: "bg-blue-50 text-blue-700 border-blue-200",
+  REMARTIK:    "bg-purple-50 text-purple-700 border-purple-200",
+  IMPULSIONAR: "bg-pink-50 text-pink-700 border-pink-200",
 }
 
 const STATUS_LABELS: Record<StatusConsulta, string> = {
@@ -51,7 +52,7 @@ const ORIGEM_LABELS: Record<OrigemConsulta, string> = {
   FC: "FC",
   LINK: "Link",
   TRAFEGO: "Tráfego",
-  TRAFEGO_RECORRENCIA: "Tráfego Rec.",
+  RECORRENCIA: "Recorrência",
   REMARTIK: "Remartik",
   IMPULSIONAR: "Impulsionar",
 }
@@ -187,7 +188,7 @@ export default async function ConsultasPage({
             <SelectItem value="FC">FC</SelectItem>
             <SelectItem value="LINK">Link</SelectItem>
             <SelectItem value="TRAFEGO">Tráfego</SelectItem>
-            <SelectItem value="TRAFEGO_RECORRENCIA">Tráfego Rec.</SelectItem>
+            <SelectItem value="RECORRENCIA">Recorrência</SelectItem>
             <SelectItem value="REMARTIK">Remartik</SelectItem>
           </SelectContent>
         </Select>
