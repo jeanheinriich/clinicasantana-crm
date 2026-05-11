@@ -22,12 +22,11 @@ export async function calcularIndicadoresConversao(mes: number, ano: number) {
     leadsPorCanal.map((l) => [l.canal, l._count.canal])
   )
   const totalLeads         = leadsPorCanal.reduce((acc, l) => acc + l._count.canal, 0)
-  const consultasAgendadas  = consultas.length
-  const consultasRealizadas = consultas.filter((c) => c.status === "REALIZADA").length
-  const consultasPagas      = consultas.filter((c) => c.dataPagamento !== null).length
-  const agendadasNovas      = consultas.filter((c) => c.origem !== "RECORRENCIA").length
+  const consultasAgendadas   = consultas.length
+  const consultasRealizadas  = consultas.filter((c) => c.status === "REALIZADA").length
+  const agendadasNovas       = consultas.filter((c) => c.origem !== "RECORRENCIA").length
   const agendadasRecorrencia = consultas.filter((c) => c.origem === "RECORRENCIA").length
-  const pendentes            = consultasAgendadas - consultasPagas
+  const pendentes            = consultasAgendadas - consultasRealizadas
 
   return {
     totalLeads,
@@ -40,7 +39,6 @@ export async function calcularIndicadoresConversao(mes: number, ano: number) {
     leadsTurbinar:    porCanal["TURBINAR"]          ?? 0,
     consultasAgendadas,
     consultasRealizadas,
-    consultasPagas,
     agendadasNovas,
     agendadasRecorrencia,
     pendentes,

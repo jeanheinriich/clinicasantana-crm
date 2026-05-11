@@ -46,13 +46,12 @@ export default async function IndicadorConversaoPage({
     calcularHistoricoConversao(ano),
   ])
 
-  const totalLeads          = indicador.totalLeads
-  const agendadas           = indicador.consultasAgendadas
-  const realizadas          = indicador.consultasRealizadas
-  const pagas               = indicador.consultasPagas
-  const agendadasNovas      = indicador.agendadasNovas
+  const totalLeads           = indicador.totalLeads
+  const agendadas            = indicador.consultasAgendadas
+  const realizadas           = indicador.consultasRealizadas
+  const agendadasNovas       = indicador.agendadasNovas
   const agendadasRecorrencia = indicador.agendadasRecorrencia
-  const pendentes           = indicador.pendentes
+  const pendentes            = indicador.pendentes
   const taxaFrac            = totalLeads > 0 ? realizadas / totalLeads : 0
   const taxaConversao       = totalLeads > 0 ? (taxaFrac * 100).toFixed(1) : "0.0"
   const taxaColor           = parseFloat(taxaConversao) >= 10 ? "hsl(36, 55%, 45%)" : "hsl(20, 65%, 52%)"
@@ -71,7 +70,7 @@ export default async function IndicadorConversaoPage({
   const funelSteps = [
     { Icon: Users,       label: "Leads Recebidos",     valor: totalLeads, iconColor: "text-blue-500"  },
     { Icon: Calendar,    label: "Consultas Agendadas",  valor: agendadas,  iconColor: "text-amber-500" },
-    { Icon: CheckSquare, label: "Consultas Realizadas", valor: pagas,      iconColor: "text-green-500" },
+    { Icon: CheckSquare, label: "Consultas Realizadas", valor: realizadas, iconColor: "text-green-500" },
   ]
 
   return (
@@ -162,7 +161,7 @@ export default async function IndicadorConversaoPage({
                         </div>
                         <span className="text-lg font-bold">
                           {label === "Consultas Realizadas"
-                            ? `${pagas} / ${agendadas}`
+                            ? `${realizadas} / ${agendadas}`
                             : valor}
                         </span>
                       </div>
