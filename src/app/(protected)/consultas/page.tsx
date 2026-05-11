@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { ConsultaFormDialog } from "@/components/consultas/consulta-form-dialog"
 import { DeleteConsultaButton } from "@/components/consultas/delete-consulta-button"
+import { ObservacaoCell } from "@/components/consultas/observacao-cell"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -219,6 +220,7 @@ export default async function ConsultasPage({
                 {ORIGEM_LABELS[c.origem as OrigemConsulta] ?? c.origem}
               </span>
               <span className="text-xs font-medium">{c.valor != null ? formatCurrency(Number(c.valor)) : "—"}</span>
+              <ObservacaoCell observacoes={c.observacoes} />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">{formatDate(c.dataConsulta)}</span>
@@ -260,6 +262,7 @@ export default async function ConsultasPage({
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Valor</TableHead>
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Status</TableHead>
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Lead</TableHead>
+              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground w-8">Obs</TableHead>
               {podeEditar && <TableHead />}
             </TableRow>
           </TableHeader>
@@ -300,6 +303,9 @@ export default async function ConsultasPage({
                       {c.lead.nome}
                     </Link>
                   ) : "—"}
+                </TableCell>
+                <TableCell>
+                  <ObservacaoCell observacoes={c.observacoes} />
                 </TableCell>
                 {podeEditar && (
                   <TableCell>
