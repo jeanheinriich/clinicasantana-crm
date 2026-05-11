@@ -20,6 +20,12 @@ export async function calcularIndicadoresComerciais(mes: number, ano: number) {
     return s + Number(c.valorProcedimento ?? 0)
   }, 0)
 
+  // Dados para ticket médio: todas as consultas separadas por origem, somando ambos os campos
+  const naoRecorrentes = consultas.filter((c) => c.origem !== "RECORRENCIA")
+  const recorrentes    = consultas.filter((c) => c.origem === "RECORRENCIA")
+  const somaValores    = (c: { valor: unknown; valorProcedimento: unknown }) =>
+    Number(c.valor ?? 0) + Number(c.valorProcedimento ?? 0)
+
   return {
     agendNovosQtd,
     agendNovosValor,
@@ -27,5 +33,11 @@ export async function calcularIndicadoresComerciais(mes: number, ano: number) {
     recorrenciaQtd,
     recorrenciaValor,
     recorrenciaTicket: recorrenciaQtd > 0 ? recorrenciaValor / recorrenciaQtd : 0,
+    // ticket médio por origem (usa valor + valorProcedimento de todas as consultas)
+    totalQtd:        consultas.length,
+    ticketNovosQtd:  naoRecorrentes.length,
+    ticketNovosValor: naoRecorrentes.reduce((s, c) => s + somaValores(c), 0),
+    ticketRecQtd:    recorrentes.length,
+    ticketRecValor:  recorrentes.reduce((s, c) => s + somaValores(c), 0),
   }
 }

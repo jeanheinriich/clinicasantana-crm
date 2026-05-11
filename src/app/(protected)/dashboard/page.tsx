@@ -81,9 +81,6 @@ export default async function DashboardPage({
   ])
 
   const realizado = Number(consultasAggregate._sum.valor ?? 0) + Number(consultasAggregate._sum.valorProcedimento ?? 0)
-  const isMesAtual = mes === hoje.getMonth() + 1 && ano === hoje.getFullYear()
-  const diasCorridos = isMesAtual ? hoje.getDate() : new Date(ano, mes, 0).getDate()
-  const diasDoMes = new Date(ano, mes, 0).getDate()
 
   const novosQtd = indicadorComercial.agendNovosQtd
   const recorrenciaQtd = indicadorComercial.recorrenciaQtd
@@ -158,13 +155,12 @@ export default async function DashboardPage({
 
       {/* Row 2: Ticket Médio */}
       <TicketMedioSection
-        novosValor={novosValor}
-        novosQtd={novosQtd}
-        recorrenciaValor={recorrenciaValor}
-        recorrenciaQtd={recorrenciaQtd}
         realizado={realizado}
-        diasCorridos={diasCorridos}
-        diasDoMes={diasDoMes}
+        totalQtd={indicadorComercial.totalQtd}
+        ticketNovosValor={indicadorComercial.ticketNovosValor}
+        ticketNovosQtd={indicadorComercial.ticketNovosQtd}
+        ticketRecValor={indicadorComercial.ticketRecValor}
+        ticketRecQtd={indicadorComercial.ticketRecQtd}
       />
 
       {/* Row 3: Funil de Conversão */}
