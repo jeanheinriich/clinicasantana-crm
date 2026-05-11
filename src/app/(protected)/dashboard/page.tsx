@@ -11,6 +11,7 @@ import { FaturamentoLineChart } from "@/components/dashboard/faturamento-line-ch
 import { LeadsBarChart } from "@/components/dashboard/leads-bar-chart"
 import { calcularIndicadoresConversao } from "@/lib/calcula-indicadores-conversao"
 import { calcularCPLPorCanal } from "@/lib/calcula-cpl"
+import { calcularIndicadoresComerciais } from "@/lib/calcula-indicadores-comerciais"
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -59,7 +60,7 @@ export default async function DashboardPage({
       _sum: { valor: true, valorProcedimento: true },
       _count: true,
     }),
-    prisma.indicadorComercial.findUnique({ where: { mes_ano: { mes, ano } } }),
+    calcularIndicadoresComerciais(mes, ano),
     calcularIndicadoresConversao(mes, ano),
     calcularCPLPorCanal(mes, ano),
     prisma.consulta.groupBy({
@@ -84,10 +85,10 @@ export default async function DashboardPage({
   const diasCorridos = isMesAtual ? hoje.getDate() : new Date(ano, mes, 0).getDate()
   const diasDoMes = new Date(ano, mes, 0).getDate()
 
-  const novosQtd = indicadorComercial?.agendamentosNovosQtd ?? 0
-  const recorrenciaQtd = indicadorComercial?.recorrenciaQtd ?? 0
-  const novosValor = indicadorComercial ? Number(indicadorComercial.agendamentosNovosValor) : 0
-  const recorrenciaValor = indicadorComercial ? Number(indicadorComercial.recorrenciaValor) : 0
+  const novosQtd = indicadorComercial.agendNovosQtd
+  const recorrenciaQtd = indicadorComercial.recorrenciaQtd
+  const novosValor = indicadorComercial.agendNovosValor
+  const recorrenciaValor = indicadorComercial.recorrenciaValor
 
   const consultasAgendadasCount = conversao.consultasAgendadas
   const consultasRealizadasCount = conversao.consultasRealizadas
@@ -132,8 +133,8 @@ export default async function DashboardPage({
               metaAceitavel={Number(metaFinanceira.metaAceitavel)}
               metaIdeal={Number(metaFinanceira.metaIdeal)}
               superMeta={Number(metaFinanceira.superMeta)}
-              novosValor={indicadorComercial ? novosValor : undefined}
-              recorrenciaValor={indicadorComercial ? recorrenciaValor : undefined}
+              novosValor={novosValor}
+              recorrenciaValor={recorrenciaValor}
             />
           ) : (
             <div className="h-full min-h-[260px] rounded-lg border border-dashed flex items-center justify-center p-8 text-center text-muted-foreground text-sm">
@@ -156,29 +157,15 @@ export default async function DashboardPage({
       </div>
 
       {/* Row 2: Ticket Médio */}
-      {indicadorComercial ? (
-        <TicketMedioSection
-          novosValor={novosValor}
-          novosQtd={novosQtd}
-          recorrenciaValor={recorrenciaValor}
-          recorrenciaQtd={recorrenciaQtd}
-          realizado={realizado}
-          diasCorridos={diasCorridos}
-          diasDoMes={diasDoMes}
-        />
-      ) : (
-        <div className="space-y-3">
-          <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-            Ticket Médio
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Indicadores comerciais não cadastrados para {MESES[mes - 1]}/{ano}.{" "}
-            <a href="/indicadores/comercial" className="underline text-foreground">
-              Cadastrar
-            </a>
-          </p>
-        </div>
-      )}
+      <TicketMedioSection
+        novosValor={novosValor}
+        novosQtd={novosQtd}
+        recorrenciaValor={recorrenciaValor}
+        recorrenciaQtd={recorrenciaQtd}
+        realizado={realizado}
+        diasCorridos={diasCorridos}
+        diasDoMes={diasDoMes}
+      />
 
       {/* Row 3: Funil de Conversão */}
       <FunilSection
