@@ -123,8 +123,9 @@ model Consulta {
   dataPagamento DateTime? @map("data_pagamento")
   dataConsulta  DateTime  @map("data_consulta")
   origem        String
-  valor         Decimal?
-  status        String    @default("PENDENTE")
+  valor              Decimal?
+  valorProcedimento  Decimal?  @map("valor_procedimento")
+  status             String    @default("PENDENTE")
   mes           Int
   ano           Int
   mesPagamento  Int?      @map("mes_pagamento")

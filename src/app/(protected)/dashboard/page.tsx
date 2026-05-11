@@ -56,7 +56,7 @@ export default async function DashboardPage({
     prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
     prisma.consulta.aggregate({
       where: { mesPagamento: mes, anoPagamento: ano, dataPagamento: { not: null } },
-      _sum: { valor: true },
+      _sum: { valor: true, valorProcedimento: true },
       _count: true,
     }),
     prisma.indicadorComercial.findUnique({ where: { mes_ano: { mes, ano } } }),
@@ -65,7 +65,7 @@ export default async function DashboardPage({
     prisma.consulta.groupBy({
       by: ["mesPagamento"],
       where: { anoPagamento: ano, dataPagamento: { not: null } },
-      _sum: { valor: true },
+      _sum: { valor: true, valorProcedimento: true },
     }),
     prisma.lead.groupBy({
       by: ["canal"],
@@ -79,7 +79,7 @@ export default async function DashboardPage({
     }),
   ])
 
-  const realizado = Number(consultasAggregate._sum.valor ?? 0)
+  const realizado = Number(consultasAggregate._sum.valor ?? 0) + Number(consultasAggregate._sum.valorProcedimento ?? 0)
   const isMesAtual = mes === hoje.getMonth() + 1 && ano === hoje.getFullYear()
   const diasCorridos = isMesAtual ? hoje.getDate() : new Date(ano, mes, 0).getDate()
   const diasDoMes = new Date(ano, mes, 0).getDate()
@@ -96,8 +96,9 @@ export default async function DashboardPage({
   // Gráfico de área: Jan → mês selecionado
   const faturamentoMeses = Array.from({ length: mes }, (_, i) => {
     const m = i + 1
-    const val = realizadosPorMes.find((r) => r.mesPagamento === m)?._sum.valor
-    return { mes: MESES_ABREV[i], realizado: val ? Number(val) : null }
+    const r = realizadosPorMes.find((r) => r.mesPagamento === m)
+    const val = r ? Number(r._sum.valor ?? 0) + Number(r._sum.valorProcedimento ?? 0) : null
+    return { mes: MESES_ABREV[i], realizado: val }
   })
 
   // Gráfico de barras: somente canais com leads

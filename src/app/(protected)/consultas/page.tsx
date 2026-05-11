@@ -108,7 +108,7 @@ export default async function ConsultasPage({
     prisma.consulta.count({ where }),
     prisma.consulta.aggregate({
       where: { ...where, dataPagamento: { not: null } },
-      _sum: { valor: true },
+      _sum: { valor: true, valorProcedimento: true },
     }),
   ])
 
@@ -123,7 +123,7 @@ export default async function ConsultasPage({
         <div>
           <h2 className="text-2xl font-bold">Consultas</h2>
           <p className="text-muted-foreground text-sm">
-            {total} consultas | Faturamento: {formatCurrency(Number(totalRealizado._sum.valor ?? 0))}
+            {total} consultas | Faturamento: {formatCurrency(Number(totalRealizado._sum.valor ?? 0) + Number(totalRealizado._sum.valorProcedimento ?? 0))}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -229,6 +229,7 @@ export default async function ConsultasPage({
                   dataPagamento: c.dataPagamento,
                   origem: c.origem,
                   valor: c.valor != null ? Number(c.valor) : null,
+                  valorProcedimento: c.valorProcedimento != null ? Number(c.valorProcedimento) : null,
                   status: c.status,
                   observacoes: c.observacoes,
                   mes: c.mes,
@@ -305,6 +306,7 @@ export default async function ConsultasPage({
                         dataPagamento: c.dataPagamento,
                         origem: c.origem,
                         valor: c.valor != null ? Number(c.valor) : null,
+                        valorProcedimento: c.valorProcedimento != null ? Number(c.valorProcedimento) : null,
                         status: c.status,
                         observacoes: c.observacoes,
                         mes: c.mes,
