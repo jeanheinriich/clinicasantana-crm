@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { ConsultaFormDialog } from "@/components/consultas/consulta-form-dialog"
+import { DeleteConsultaButton } from "@/components/consultas/delete-consulta-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -222,22 +223,25 @@ export default async function ConsultasPage({
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">{formatDate(c.dataConsulta)}</span>
               {podeEditar && (
-                <ConsultaFormDialog consulta={{
-                  id: c.id,
-                  nomeCliente: c.nomeCliente,
-                  dataConsulta: c.dataConsulta,
-                  dataPagamento: c.dataPagamento,
-                  origem: c.origem,
-                  valor: c.valor != null ? Number(c.valor) : null,
-                  valorProcedimento: c.valorProcedimento != null ? Number(c.valorProcedimento) : null,
-                  status: c.status,
-                  observacoes: c.observacoes,
-                  mes: c.mes,
-                  ano: c.ano,
-                  leadId: c.leadId,
-                }}>
-                  <Button variant="ghost" size="sm" className="h-8 px-3">Editar</Button>
-                </ConsultaFormDialog>
+                <div className="flex gap-1">
+                  <ConsultaFormDialog consulta={{
+                    id: c.id,
+                    nomeCliente: c.nomeCliente,
+                    dataConsulta: c.dataConsulta,
+                    dataPagamento: c.dataPagamento,
+                    origem: c.origem,
+                    valor: c.valor != null ? Number(c.valor) : null,
+                    valorProcedimento: c.valorProcedimento != null ? Number(c.valorProcedimento) : null,
+                    status: c.status,
+                    observacoes: c.observacoes,
+                    mes: c.mes,
+                    ano: c.ano,
+                    leadId: c.leadId,
+                  }}>
+                    <Button variant="ghost" size="sm" className="h-8 px-3">Editar</Button>
+                  </ConsultaFormDialog>
+                  <DeleteConsultaButton id={c.id} />
+                </div>
               )}
             </div>
           </div>
@@ -299,22 +303,25 @@ export default async function ConsultasPage({
                 </TableCell>
                 {podeEditar && (
                   <TableCell>
-                    <ConsultaFormDialog consulta={{
-                        id: c.id,
-                        nomeCliente: c.nomeCliente,
-                        dataConsulta: c.dataConsulta,
-                        dataPagamento: c.dataPagamento,
-                        origem: c.origem,
-                        valor: c.valor != null ? Number(c.valor) : null,
-                        valorProcedimento: c.valorProcedimento != null ? Number(c.valorProcedimento) : null,
-                        status: c.status,
-                        observacoes: c.observacoes,
-                        mes: c.mes,
-                        ano: c.ano,
-                        leadId: c.leadId,
-                      }}>
-                      <Button variant="ghost" size="sm">Editar</Button>
-                    </ConsultaFormDialog>
+                    <div className="flex gap-1 justify-end">
+                      <ConsultaFormDialog consulta={{
+                          id: c.id,
+                          nomeCliente: c.nomeCliente,
+                          dataConsulta: c.dataConsulta,
+                          dataPagamento: c.dataPagamento,
+                          origem: c.origem,
+                          valor: c.valor != null ? Number(c.valor) : null,
+                          valorProcedimento: c.valorProcedimento != null ? Number(c.valorProcedimento) : null,
+                          status: c.status,
+                          observacoes: c.observacoes,
+                          mes: c.mes,
+                          ano: c.ano,
+                          leadId: c.leadId,
+                        }}>
+                        <Button variant="ghost" size="sm">Editar</Button>
+                      </ConsultaFormDialog>
+                      <DeleteConsultaButton id={c.id} />
+                    </div>
                   </TableCell>
                 )}
               </TableRow>
