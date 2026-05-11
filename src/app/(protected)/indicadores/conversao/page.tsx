@@ -46,12 +46,16 @@ export default async function IndicadorConversaoPage({
     calcularHistoricoConversao(ano),
   ])
 
-  const totalLeads    = indicador.totalLeads
-  const agendadas     = indicador.consultasAgendadas
-  const realizadas    = indicador.consultasRealizadas
-  const taxaFrac      = totalLeads > 0 ? realizadas / totalLeads : 0
-  const taxaConversao = totalLeads > 0 ? (taxaFrac * 100).toFixed(1) : "0.0"
-  const taxaColor     = parseFloat(taxaConversao) >= 10 ? "hsl(36, 55%, 45%)" : "hsl(20, 65%, 52%)"
+  const totalLeads          = indicador.totalLeads
+  const agendadas           = indicador.consultasAgendadas
+  const realizadas          = indicador.consultasRealizadas
+  const pagas               = indicador.consultasPagas
+  const agendadasNovas      = indicador.agendadasNovas
+  const agendadasRecorrencia = indicador.agendadasRecorrencia
+  const pendentes           = indicador.pendentes
+  const taxaFrac            = totalLeads > 0 ? realizadas / totalLeads : 0
+  const taxaConversao       = totalLeads > 0 ? (taxaFrac * 100).toFixed(1) : "0.0"
+  const taxaColor           = parseFloat(taxaConversao) >= 10 ? "hsl(36, 55%, 45%)" : "hsl(20, 65%, 52%)"
 
   const anosDisponiveis = Array.from({ length: 5 }, (_, i) => hoje.getFullYear() - 2 + i)
 
@@ -67,7 +71,7 @@ export default async function IndicadorConversaoPage({
   const funelSteps = [
     { Icon: Users,       label: "Leads Recebidos",     valor: totalLeads, iconColor: "text-blue-500"  },
     { Icon: Calendar,    label: "Consultas Agendadas",  valor: agendadas,  iconColor: "text-amber-500" },
-    { Icon: CheckSquare, label: "Consultas Realizadas", valor: realizadas, iconColor: "text-green-500" },
+    { Icon: CheckSquare, label: "Consultas Realizadas", valor: pagas,      iconColor: "text-green-500" },
   ]
 
   return (
@@ -142,9 +146,25 @@ export default async function IndicadorConversaoPage({
                       <div className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-2">
                           <Icon className={`h-4 w-4 shrink-0 ${iconColor}`} />
-                          <span className="text-sm text-muted-foreground">{label}</span>
+                          <div>
+                            <span className="text-sm text-muted-foreground">{label}</span>
+                            {label === "Consultas Agendadas" && (
+                              <p className="text-xs text-muted-foreground/70 leading-tight">
+                                {agendadasNovas} novas · {agendadasRecorrencia} recorrência
+                              </p>
+                            )}
+                            {label === "Consultas Realizadas" && pendentes > 0 && (
+                              <p className="text-xs text-muted-foreground/70 leading-tight">
+                                {pendentes} pendente{pendentes !== 1 ? "s" : ""}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-lg font-bold">{valor}</span>
+                        <span className="text-lg font-bold">
+                          {label === "Consultas Realizadas"
+                            ? `${pagas} / ${agendadas}`
+                            : valor}
+                        </span>
                       </div>
                       {idx < funelSteps.length - 1 && (
                         <div className="ml-2 w-px h-3 bg-border" />
