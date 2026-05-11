@@ -27,6 +27,11 @@ export const createConsultaAction = createProtectedAction(
     const data = schema.parse(input)
     const dataConsulta = data.dataConsulta
     const dataPagamento = data.dataPagamento ?? null
+
+    if (dataPagamento && dataPagamento > new Date()) {
+      throw new Error("A data de pagamento não pode ser uma data futura.")
+    }
+
     const consulta = await prisma.consulta.create({
       data: {
         ...data,

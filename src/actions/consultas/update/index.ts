@@ -30,6 +30,11 @@ export const updateConsultaAction = createProtectedAction(
   ["ADMIN", "GESTOR"],
   async (input: z.infer<typeof schema>) => {
     const { id, dataConsulta, dataPagamento, ...rest } = schema.parse(input)
+
+    if (dataPagamento && dataPagamento > new Date()) {
+      throw new Error("A data de pagamento não pode ser uma data futura.")
+    }
+
     const consulta = await prisma.consulta.update({
       where: { id },
       data: {
