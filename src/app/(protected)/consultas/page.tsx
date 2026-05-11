@@ -99,20 +99,22 @@ export default async function ConsultasPage({
     ...(params.origem && params.origem !== "todos" && { origem: params.origem as OrigemConsulta }),
   }
 
-  const [consultas, total, totalRealizado] = await Promise.all([
+  const [consultasRaw, total, totalRealizado] = await Promise.all([
     prisma.consulta.findMany({
       where,
       orderBy: { dataConsulta: "desc" },
       take: PAGE_SIZE,
       skip,
-      include: { lead: { select: { nome: true } } },
     }),
     prisma.consulta.count({ where }),
     prisma.consulta.aggregate({
-      where: { ...where, dataPagamento: { not: null } },
+      where: { ...where, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
       _sum: { valor: true, valorProcedimento: true },
     }),
   ])
+
+  type ConsultaRow = (typeof consultasRaw)[0] & { valorProcedimento: (typeof consultasRaw)[0]["valor"] }
+  const consultas = consultasRaw as ConsultaRow[]
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
   const podeEditar = temPermissao(papel, "consultas", "edit")
@@ -261,7 +263,6 @@ export default async function ConsultasPage({
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Origem</TableHead>
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Valor</TableHead>
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Status</TableHead>
-              <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground">Lead</TableHead>
               <TableHead className="text-xs uppercase tracking-wide font-semibold text-muted-foreground w-8">Obs</TableHead>
               {podeEditar && <TableHead />}
             </TableRow>
@@ -296,13 +297,6 @@ export default async function ConsultasPage({
                   <Badge variant={STATUS_VARIANT[c.status as StatusConsulta]}>
                     {STATUS_LABELS[c.status as StatusConsulta] ?? c.status}
                   </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {c.lead ? (
-                    <Link href={`/leads/${c.leadId}`} className="hover:underline">
-                      {c.lead.nome}
-                    </Link>
-                  ) : "—"}
                 </TableCell>
                 <TableCell>
                   <ObservacaoCell observacoes={c.observacoes} />

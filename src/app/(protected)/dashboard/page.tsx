@@ -56,7 +56,7 @@ export default async function DashboardPage({
   ] = await Promise.all([
     prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
     prisma.consulta.aggregate({
-      where: { mesPagamento: mes, anoPagamento: ano, dataPagamento: { not: null } },
+      where: { mesPagamento: mes, anoPagamento: ano, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
       _sum: { valor: true, valorProcedimento: true },
       _count: true,
     }),
@@ -65,7 +65,7 @@ export default async function DashboardPage({
     calcularCPLPorCanal(mes, ano),
     prisma.consulta.groupBy({
       by: ["mesPagamento"],
-      where: { anoPagamento: ano, dataPagamento: { not: null } },
+      where: { anoPagamento: ano, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
       _sum: { valor: true, valorProcedimento: true },
     }),
     prisma.lead.groupBy({

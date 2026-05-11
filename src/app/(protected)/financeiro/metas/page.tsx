@@ -30,7 +30,7 @@ export default async function MetasPage() {
     }),
     prisma.consulta.groupBy({
       by: ["mesPagamento"],
-      where: { anoPagamento: ano, dataPagamento: { not: null } },
+      where: { anoPagamento: ano, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
       _sum: { valor: true, valorProcedimento: true },
     }),
   ])

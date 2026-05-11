@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function calcularIndicadoresComerciais(mes: number, ano: number) {
   const consultas = await prisma.consulta.findMany({
-    where: { mesPagamento: mes, anoPagamento: ano, dataPagamento: { not: null } },
+    where: { mesPagamento: mes, anoPagamento: ano, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
     select: { valor: true, valorProcedimento: true },
   })
 
