@@ -19,11 +19,9 @@ import { PaginationNav } from "@/components/ui/pagination-nav"
 import { SyncButton } from "@/components/ui/sync-button"
 import { PeriodoFilter } from "@/components/campanhas/periodo-filter"
 import { startOfMonth, format } from "date-fns"
-import type { Prisma } from "@prisma/client"
-
 const PAGE_SIZE = 10
 
-function buildWhere(de: string, ate: string): Prisma.MetaCampanhaWhereInput {
+function buildWhere(de: string, ate: string) {
   const from = new Date(de)
   const to   = new Date(ate)
   to.setHours(23, 59, 59, 999)
@@ -135,12 +133,12 @@ export default async function CampanhasPage({
           subtitle="Investimento ÷ leads do período"
         />
         <KpiCard
-          title="Visitas ao Perfil"
+          title="Visualizações"
           value={totalVistas > 0 ? totalVistas.toLocaleString("pt-BR") : "Sem dados"}
           icon={Play}
           iconBg="bg-indigo-50"
           iconColor="text-indigo-600"
-          subtitle={custoVisita != null ? `Custo/visita: ${formatCurrency(custoVisita)}` : undefined}
+          subtitle={custoVisita != null ? `Custo/visualização: ${formatCurrency(custoVisita)}` : undefined}
         />
         <KpiCard
           title="Seguidores Ganhos"

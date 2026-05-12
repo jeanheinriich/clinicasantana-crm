@@ -123,8 +123,8 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
     const findAction = (type: string) =>
       parseInt(actions.find((a) => a.action_type === type)?.value ?? "0", 10)
 
-    const vistas    = findAction("instagram_profile_visits") || findAction("profile_visits")
-    const seguidores = findAction("follow") || findAction("instagram_follows")
+    const vistas    = findAction("video_view")
+    const seguidores = findAction("follow") || findAction("onsite_conversion.post_net_like")
     const leads      = findAction("lead") || findAction("onsite_conversion.lead_grouped")
 
     return {
