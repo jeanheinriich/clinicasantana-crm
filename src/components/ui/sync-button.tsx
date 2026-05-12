@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { RefreshCw, CheckCircle2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -14,6 +15,7 @@ interface SyncButtonProps {
 export function SyncButton({ endpoint, label = "Sincronizar Agora" }: SyncButtonProps) {
   const [state, setState] = useState<State>("idle")
   const [errorMsg, setErrorMsg] = useState("")
+  const router = useRouter()
 
   async function handleClick() {
     setState("loading")
@@ -29,6 +31,7 @@ export function SyncButton({ endpoint, label = "Sincronizar Agora" }: SyncButton
         setTimeout(() => setState("idle"), 5000)
       } else {
         setState("success")
+        router.refresh()
         setTimeout(() => setState("idle"), 3000)
       }
     } catch (e) {
