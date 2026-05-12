@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { KpiCard } from "@/components/dashboard/kpi-card"
-import { Megaphone, DollarSign, Eye, MousePointerClick, TrendingDown } from "lucide-react"
+import { Megaphone, DollarSign, Eye, MousePointerClick, TrendingDown, Play, UserPlus } from "lucide-react"
 import { PaginationNav } from "@/components/ui/pagination-nav"
 import { SyncButton } from "@/components/ui/sync-button"
 import { PeriodoFilter } from "@/components/campanhas/periodo-filter"
@@ -28,7 +28,11 @@ function buildWhere(de: string, ate: string): Prisma.MetaCampanhaWhereInput {
   const to   = new Date(ate)
   to.setHours(23, 59, 59, 999)
   return {
-    dataInicio: { gte: from, lte: to },
+    dataInicio: { lte: to },
+    OR: [
+      { dataFim: { gte: from } },
+      { dataFim: null },
+    ],
   }
 }
 
@@ -60,7 +64,7 @@ export default async function CampanhasPage({
     prisma.metaCampanha.count({ where }),
     prisma.metaCampanha.aggregate({
       where,
-      _sum: { investimento: true, alcance: true, cliques: true },
+      _sum: { investimento: true, alcance: true, cliques: true, vistas: true, seguidores: true },
     }),
     prisma.lead.count({
       where: {
@@ -69,11 +73,15 @@ export default async function CampanhasPage({
     }),
   ])
 
-  const totalPages     = Math.ceil(total / PAGE_SIZE)
+  const totalPages        = Math.ceil(total / PAGE_SIZE)
   const totalInvestimento = Number(totais._sum.investimento ?? 0)
   const totalAlcance      = totais._sum.alcance ?? 0
   const totalCliques      = totais._sum.cliques ?? 0
-  const cpl = totalLeads > 0 ? totalInvestimento / totalLeads : null
+  const totalVistas       = totais._sum.vistas ?? 0
+  const totalSeguidores   = totais._sum.seguidores ?? 0
+  const cpl               = totalLeads > 0 ? totalInvestimento / totalLeads : null
+  const custoVisita       = totalVistas > 0 ? totalInvestimento / totalVistas : null
+  const custoSeguidor     = totalSeguidores > 0 ? totalInvestimento / totalSeguidores : null
 
   return (
     <div className="space-y-6">
@@ -96,7 +104,7 @@ export default async function CampanhasPage({
       <PeriodoFilter deParam={deParam} ateParam={ateParam} totalInvestimento={totalInvestimento} />
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <KpiCard
           title="Investimento Total"
           value={formatCurrency(totalInvestimento)}
@@ -126,6 +134,22 @@ export default async function CampanhasPage({
           iconColor="text-rose-600"
           subtitle="Investimento ÷ leads do período"
         />
+        <KpiCard
+          title="Visitas ao Perfil"
+          value={totalVistas > 0 ? totalVistas.toLocaleString("pt-BR") : "Sem dados"}
+          icon={Play}
+          iconBg="bg-indigo-50"
+          iconColor="text-indigo-600"
+          subtitle={custoVisita != null ? `Custo/visita: ${formatCurrency(custoVisita)}` : undefined}
+        />
+        <KpiCard
+          title="Seguidores Ganhos"
+          value={totalSeguidores > 0 ? totalSeguidores.toLocaleString("pt-BR") : "Sem dados"}
+          icon={UserPlus}
+          iconBg="bg-emerald-50"
+          iconColor="text-emerald-600"
+          subtitle={custoSeguidor != null ? `Custo/seguidor: ${formatCurrency(custoSeguidor)}` : undefined}
+        />
       </div>
 
       {/* Tabela de campanhas */}
@@ -140,12 +164,14 @@ export default async function CampanhasPage({
               <TableHead className="text-right">Cliques</TableHead>
               <TableHead className="text-right">Impressões</TableHead>
               <TableHead>Início</TableHead>
+              <TableHead className="text-right">Dias</TableHead>
+              <TableHead className="text-right">CPL</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {campanhas.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                   Nenhuma campanha no período selecionado.
                 </TableCell>
               </TableRow>
@@ -174,6 +200,16 @@ export default async function CampanhasPage({
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {c.dataInicio ? formatDate(c.dataInicio) : "—"}
+                </TableCell>
+                <TableCell className="text-right text-muted-foreground">
+                  {c.dataInicio && c.dataFim
+                    ? Math.ceil((c.dataFim.getTime() - c.dataInicio.getTime()) / 86400000)
+                    : c.dataFim ? "—" : "Ativo"}
+                </TableCell>
+                <TableCell className="text-right">
+                  {c.leadsGerados > 0
+                    ? formatCurrency(Number(c.investimento) / c.leadsGerados)
+                    : "—"}
                 </TableCell>
               </TableRow>
             ))}

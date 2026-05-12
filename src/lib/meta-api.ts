@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 
-const META_API_VERSION = "v19.0"
+const META_API_VERSION = "v21.0"
 const META_API_BASE = `https://graph.facebook.com/${META_API_VERSION}`
 
 export interface MetaCampanhaData {
@@ -11,6 +11,10 @@ export interface MetaCampanhaData {
   alcance: number
   impressoes: number
   cliques: number
+  vistas: number
+  seguidores: number
+  leadsGerados: number
+  custoPorLead: number | null
   dataInicio: Date | null
   dataFim: Date | null
 }
@@ -99,7 +103,7 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
   url.searchParams.set("access_token", accessToken)
   url.searchParams.set(
     "fields",
-    "id,name,status,start_time,stop_time,insights{spend,reach,impressions,clicks}"
+    "id,name,status,start_time,stop_time,insights{spend,reach,impressions,clicks,actions}"
   )
   url.searchParams.set("limit", "100")
 
@@ -112,18 +116,31 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
 
   const data = await res.json()
   const campanhas: MetaCampanhaData[] = (data.data ?? []).map((c: Record<string, unknown>) => {
-    const insights = (c.insights as { data: Record<string, string>[] } | undefined)?.data?.[0] ?? {}
-    const spend = parseFloat(insights.spend ?? "0")
+    const insights = (c.insights as { data: Record<string, unknown>[] } | undefined)?.data?.[0] ?? {}
+    const spend = parseFloat((insights.spend as string | undefined) ?? "0")
+
+    const actions = (insights.actions as Array<{ action_type: string; value: string }> | undefined) ?? []
+    const findAction = (type: string) =>
+      parseInt(actions.find((a) => a.action_type === type)?.value ?? "0", 10)
+
+    const vistas    = findAction("instagram_profile_visits") || findAction("profile_visits")
+    const seguidores = findAction("follow") || findAction("instagram_follows")
+    const leads      = findAction("lead") || findAction("onsite_conversion.lead_grouped")
+
     return {
-      campanhaId: String(c.id),
-      nome: String(c.name),
-      status: String(c.status),
+      campanhaId:   String(c.id),
+      nome:         String(c.name),
+      status:       String(c.status),
       investimento: spend,
-      alcance: parseInt(insights.reach ?? "0", 10),
-      impressoes: parseInt(insights.impressions ?? "0", 10),
-      cliques: parseInt(insights.clicks ?? "0", 10),
-      dataInicio: c.start_time ? new Date(String(c.start_time)) : null,
-      dataFim: c.stop_time ? new Date(String(c.stop_time)) : null,
+      alcance:      parseInt((insights.reach as string | undefined) ?? "0", 10),
+      impressoes:   parseInt((insights.impressions as string | undefined) ?? "0", 10),
+      cliques:      parseInt((insights.clicks as string | undefined) ?? "0", 10),
+      vistas,
+      seguidores,
+      leadsGerados: leads,
+      custoPorLead: leads > 0 ? spend / leads : null,
+      dataInicio:   c.start_time ? new Date(String(c.start_time)) : null,
+      dataFim:      c.stop_time ? new Date(String(c.stop_time)) : null,
     }
   })
 

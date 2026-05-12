@@ -203,6 +203,8 @@ model MetaCampanha {
   alcance        Int       @default(0)
   impressoes     Int       @default(0)
   cliques        Int       @default(0)
+  vistas         Int       @default(0)
+  seguidores     Int       @default(0)
   leadsGerados   Int       @default(0) @map("leads_gerados")
   custoPorLead   Decimal?  @map("custo_por_lead")
   dataInicio     DateTime? @map("data_inicio")
