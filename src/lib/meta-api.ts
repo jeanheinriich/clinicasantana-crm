@@ -103,7 +103,7 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
   url.searchParams.set("access_token", accessToken)
   url.searchParams.set(
     "fields",
-    "id,name,status,start_time,stop_time,insights{spend,reach,impressions,clicks,actions}"
+    "id,name,status,start_time,stop_time,insights.date_preset(maximum){spend,reach,impressions,clicks,actions}"
   )
   url.searchParams.set("limit", "100")
 

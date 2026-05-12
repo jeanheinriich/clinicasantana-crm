@@ -143,14 +143,17 @@ export default async function MetaIntegracaoPage({
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Investimento</TableHead>
                   <TableHead className="text-right">Alcance</TableHead>
+                  <TableHead className="text-right">Visualizações</TableHead>
+                  <TableHead className="text-right">Seguidores</TableHead>
                   <TableHead className="text-right">Leads</TableHead>
                   <TableHead className="text-right">CPL</TableHead>
+                  <TableHead>Sincronizado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {campanhas.map((c) => (
                   <TableRow key={c.id}>
-                    <TableCell className="font-medium max-w-[200px] truncate">
+                    <TableCell className="font-medium max-w-[180px] truncate" title={c.nome}>
                       {c.nome}
                     </TableCell>
                     <TableCell>
@@ -164,9 +167,18 @@ export default async function MetaIntegracaoPage({
                     <TableCell className="text-right">
                       {c.alcance.toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-right">{c.leadsGerados}</TableCell>
+                    <TableCell className="text-right">
+                      {c.vistas > 0 ? c.vistas.toLocaleString("pt-BR") : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {c.seguidores > 0 ? c.seguidores.toLocaleString("pt-BR") : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">{c.leadsGerados > 0 ? c.leadsGerados : "—"}</TableCell>
                     <TableCell className="text-right">
                       {c.custoPorLead != null ? formatCurrency(Number(c.custoPorLead)) : "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {formatDateTime(c.sincronizadoEm)}
                     </TableCell>
                   </TableRow>
                 ))}
