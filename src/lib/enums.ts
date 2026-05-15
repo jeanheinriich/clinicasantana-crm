@@ -5,3 +5,4 @@ export type CanalLead = "IMPULSIONAR" | "REMARTIK" | "TRAFEGO" | "FC" | "LINK" |
 export type StatusLead = "ABORDAGEM" | "EM_CONVERSA" | "AGENDADO" | "CONVERTIDO" | "CANCELADO" | "PAROU_DE_INTERAGIR" | "FECHOU" | "CONSULTA_FECHADA" | "LEAD_PERDIDO"
 export type OrigemConsulta = "FC" | "LINK" | "TRAFEGO" | "RECORRENCIA" | "REMARTIK" | "IMPULSIONAR"
 export type StatusConsulta = "REALIZADA" | "CANCELADA" | "PENDENTE"
+export type StatusVenda = "PENDENTE" | "REALIZADA" | "CANCELADA"
