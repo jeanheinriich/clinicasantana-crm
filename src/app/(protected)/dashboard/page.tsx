@@ -51,8 +51,10 @@ export default async function DashboardPage({
     indicadorComercial,
     conversao,
     cpl,
-    realizadosPorMes,
+    realizadosConsultasPorMes,
     leadsPorCanalRaw,
+    vendasDoMes,
+    realizadosVendasPorMes,
   ] = await Promise.all([
     prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
     prisma.consulta.aggregate({
@@ -78,14 +80,26 @@ export default async function DashboardPage({
       },
       _count: { _all: true },
     }),
+    prisma.venda.findMany({
+      where: { mes, ano, status: "REALIZADA" },
+      include: { consulta: { select: { origem: true } } },
+    }),
+    prisma.venda.groupBy({
+      by: ["mes"],
+      where: { ano, status: "REALIZADA" },
+      _sum: { valor: true },
+    }),
   ])
 
-  const realizado = Number(consultasAggregate._sum.valor ?? 0)
+  const totalVendasRealizado = vendasDoMes.reduce((s, v) => s + Number(v.valor), 0)
+  const vendaNovosValor      = vendasDoMes.filter((v) => v.consulta.origem !== "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
+  const vendaRecValor        = vendasDoMes.filter((v) => v.consulta.origem === "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
 
-  const novosQtd = indicadorComercial.agendNovosQtd
-  const recorrenciaQtd = indicadorComercial.recorrenciaQtd
-  const novosValor = indicadorComercial.agendNovosValor
-  const recorrenciaValor = indicadorComercial.recorrenciaValor
+  const realizado        = Number(consultasAggregate._sum.valor ?? 0) + totalVendasRealizado
+  const novosQtd         = indicadorComercial.agendNovosQtd
+  const recorrenciaQtd   = indicadorComercial.recorrenciaQtd
+  const novosValor       = indicadorComercial.agendNovosValor + vendaNovosValor
+  const recorrenciaValor = indicadorComercial.recorrenciaValor + vendaRecValor
 
   const consultasAgendadasCount = conversao.consultasAgendadas
   const consultasRealizadasCount = conversao.consultasRealizadas
@@ -94,8 +108,11 @@ export default async function DashboardPage({
   // Gráfico de área: Jan → mês selecionado
   const faturamentoMeses = Array.from({ length: mes }, (_, i) => {
     const m = i + 1
-    const r = realizadosPorMes.find((r) => r.mesPagamento === m)
-    const val = r ? Number(r._sum.valor ?? 0) : null
+    const rc = realizadosConsultasPorMes.find((r) => r.mesPagamento === m)
+    const rv = realizadosVendasPorMes.find((r) => r.mes === m)
+    const cVal = rc ? Number(rc._sum.valor ?? 0) : null
+    const vVal = rv ? Number(rv._sum.valor ?? 0) : null
+    const val = cVal !== null || vVal !== null ? (cVal ?? 0) + (vVal ?? 0) : null
     return { mes: MESES_ABREV[i], realizado: val }
   })
 
@@ -157,9 +174,9 @@ export default async function DashboardPage({
       <TicketMedioSection
         realizado={realizado}
         totalQtd={indicadorComercial.totalQtd}
-        ticketNovosValor={indicadorComercial.ticketNovosValor}
+        ticketNovosValor={indicadorComercial.ticketNovosValor + vendaNovosValor}
         ticketNovosQtd={indicadorComercial.ticketNovosQtd}
-        ticketRecValor={indicadorComercial.ticketRecValor}
+        ticketRecValor={indicadorComercial.ticketRecValor + vendaRecValor}
         ticketRecQtd={indicadorComercial.ticketRecQtd}
       />
 

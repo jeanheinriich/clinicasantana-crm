@@ -23,7 +23,7 @@ export default async function MetasPage() {
 
   const ano = new Date().getFullYear()
 
-  const [metas, realizados] = await Promise.all([
+  const [metas, realizadosConsultas, realizadosVendas] = await Promise.all([
     prisma.metaFinanceira.findMany({
       where: { ano },
       orderBy: { mes: "asc" },
@@ -31,6 +31,11 @@ export default async function MetasPage() {
     prisma.consulta.groupBy({
       by: ["mesPagamento"],
       where: { anoPagamento: ano, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
+      _sum: { valor: true },
+    }),
+    prisma.venda.groupBy({
+      by: ["mes"],
+      where: { ano, status: "REALIZADA" },
       _sum: { valor: true },
     }),
   ])
@@ -45,8 +50,9 @@ export default async function MetasPage() {
   const dadosMensais = Array.from({ length: 12 }, (_, i) => {
     const m = i + 1
     const meta = metas.find((me) => me.mes === m)
-    const r = realizados.find((r) => r.mesPagamento === m)
-    const realizado = Number(r?._sum.valor ?? 0)
+    const rc = realizadosConsultas.find((r) => r.mesPagamento === m)
+    const rv = realizadosVendas.find((r) => r.mes === m)
+    const realizado = Number(rc?._sum.valor ?? 0) + Number(rv?._sum.valor ?? 0)
     return { mes: m, nomeMes: MESES[i], meta, realizado }
   })
 
