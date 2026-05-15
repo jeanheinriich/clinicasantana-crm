@@ -124,7 +124,6 @@ model Consulta {
   dataConsulta  DateTime  @map("data_consulta")
   origem        String
   valor              Decimal?
-  valorProcedimento  Decimal?  @map("valor_procedimento")
   status             String    @default("PENDENTE")
   mes           Int
   ano           Int

@@ -57,7 +57,7 @@ export default async function DashboardPage({
     prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
     prisma.consulta.aggregate({
       where: { mesPagamento: mes, anoPagamento: ano, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
-      _sum: { valor: true, valorProcedimento: true },
+      _sum: { valor: true },
       _count: true,
     }),
     calcularIndicadoresComerciais(mes, ano),
@@ -66,7 +66,7 @@ export default async function DashboardPage({
     prisma.consulta.groupBy({
       by: ["mesPagamento"],
       where: { anoPagamento: ano, dataPagamento: { not: null }, status: { not: "CANCELADA" } },
-      _sum: { valor: true, valorProcedimento: true },
+      _sum: { valor: true },
     }),
     prisma.lead.groupBy({
       by: ["canal"],
@@ -80,7 +80,7 @@ export default async function DashboardPage({
     }),
   ])
 
-  const realizado = Number(consultasAggregate._sum.valor ?? 0) + Number(consultasAggregate._sum.valorProcedimento ?? 0)
+  const realizado = Number(consultasAggregate._sum.valor ?? 0)
 
   const novosQtd = indicadorComercial.agendNovosQtd
   const recorrenciaQtd = indicadorComercial.recorrenciaQtd
@@ -95,7 +95,7 @@ export default async function DashboardPage({
   const faturamentoMeses = Array.from({ length: mes }, (_, i) => {
     const m = i + 1
     const r = realizadosPorMes.find((r) => r.mesPagamento === m)
-    const val = r ? Number(r._sum.valor ?? 0) + Number(r._sum.valorProcedimento ?? 0) : null
+    const val = r ? Number(r._sum.valor ?? 0) : null
     return { mes: MESES_ABREV[i], realizado: val }
   })
 
