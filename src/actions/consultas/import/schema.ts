@@ -25,15 +25,6 @@ export const ConsultaImportRowSchema = z.object({
       const num = parseFloat(v.replace(/[R$\s.]/g, "").replace(",", "."))
       return isNaN(num) ? null : num
     }),
-  valorProcedimento: z
-    .string()
-    .optional()
-    .nullable()
-    .transform((v) => {
-      if (!v) return null
-      const num = parseFloat(v.replace(/[R$\s.]/g, "").replace(",", "."))
-      return isNaN(num) ? null : num
-    }),
   status: z
     .enum(["REALIZADA", "CANCELADA", "PENDENTE"])
     .default("REALIZADA"),

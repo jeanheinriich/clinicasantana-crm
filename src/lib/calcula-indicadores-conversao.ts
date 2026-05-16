@@ -21,11 +21,12 @@ export async function calcularIndicadoresConversao(mes: number, ano: number) {
   const porCanal = Object.fromEntries(
     leadsPorCanal.map((l) => [l.canal, l._count.canal])
   )
-  const totalLeads         = leadsPorCanal.reduce((acc, l) => acc + l._count.canal, 0)
-  const consultasAgendadas   = consultas.length
-  const consultasRealizadas  = consultas.filter((c) => c.status === "REALIZADA").length
-  const agendadasNovas       = consultas.filter((c) => c.origem !== "RECORRENCIA").length
-  const agendadasRecorrencia = consultas.filter((c) => c.origem === "RECORRENCIA").length
+  const totalLeads           = leadsPorCanal.reduce((acc, l) => acc + l._count.canal, 0)
+  const naoCancel            = consultas.filter((c) => c.status !== "CANCELADA")
+  const consultasAgendadas   = naoCancel.length
+  const consultasRealizadas  = naoCancel.filter((c) => c.dataPagamento !== null).length
+  const agendadasNovas       = naoCancel.filter((c) => c.origem !== "RECORRENCIA").length
+  const agendadasRecorrencia = naoCancel.filter((c) => c.origem === "RECORRENCIA").length
   const pendentes            = consultasAgendadas - consultasRealizadas
 
   return {
@@ -58,19 +59,19 @@ export async function calcularHistoricoConversao(ano: number) {
     }),
     prisma.consulta.findMany({
       where: { ano },
-      select: { mes: true, status: true },
+      select: { mes: true, status: true, dataPagamento: true },
     }),
   ])
 
   return Array.from({ length: 12 }, (_, i) => {
-    const mes         = i + 1
-    const mesLeads    = leads.filter((l) => l.dataCriacao.getMonth() + 1 === mes)
-    const mesConsultas = consultas.filter((c) => c.mes === mes)
+    const mes          = i + 1
+    const mesLeads     = leads.filter((l) => l.dataCriacao.getMonth() + 1 === mes)
+    const mesConsultas = consultas.filter((c) => c.mes === mes && c.status !== "CANCELADA")
     if (mesLeads.length === 0 && mesConsultas.length === 0) return null
     return {
       mes,
       totalLeads:          mesLeads.length,
-      consultasRealizadas: mesConsultas.filter((c) => c.status === "REALIZADA").length,
+      consultasRealizadas: mesConsultas.filter((c) => c.dataPagamento !== null).length,
     }
   }).filter((v): v is NonNullable<typeof v> => v !== null)
 }

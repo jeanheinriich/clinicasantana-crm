@@ -41,7 +41,6 @@ type ConsultaSerializavel = {
   dataPagamento?: Date | null
   origem: string
   valor?: number | null
-  valorProcedimento?: number | null
   status: string
   observacoes?: string | null
   mes: number
@@ -55,7 +54,6 @@ const schema = z.object({
   dataPagamento: z.string().optional(),
   origem: z.enum(["FC", "LINK", "TRAFEGO", "RECORRENCIA", "REMARTIK"]),
   valor: z.string().optional(),
-  valorProcedimento: z.string().optional(),
   status: z.enum(["REALIZADA", "CANCELADA", "PENDENTE"]),
   observacoes: z.string().optional(),
 })
@@ -98,7 +96,6 @@ export function ConsultaFormDialog({ consulta, children }: ConsultaFormDialogPro
       dataPagamento: toDateInput(consulta?.dataPagamento),
       origem: (consulta?.origem as FormValues["origem"]) ?? "FC",
       valor: consulta?.valor != null ? String(consulta.valor) : "",
-      valorProcedimento: consulta?.valorProcedimento != null ? String(consulta.valorProcedimento) : "",
       status: (consulta?.status as FormValues["status"]) ?? "PENDENTE",
       observacoes: consulta?.observacoes ?? "",
     },
@@ -113,7 +110,6 @@ export function ConsultaFormDialog({ consulta, children }: ConsultaFormDialogPro
       status: values.status,
       observacoes: values.observacoes,
       valor: values.valor ? parseFloat(values.valor.replace(",", ".")) : undefined,
-      valorProcedimento: values.valorProcedimento ? parseFloat(values.valorProcedimento.replace(",", ".")) : undefined,
     }
 
     const result = isEdit
@@ -236,44 +232,24 @@ export function ConsultaFormDialog({ consulta, children }: ConsultaFormDialogPro
                 )}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="valor"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Valor da consulta (R$)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="valorProcedimento"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Valor do procedimento (R$)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="0,00"
-                        inputMode="decimal"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="valor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Valor da consulta (R$)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="0,00"
+                      inputMode="decimal"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="observacoes"

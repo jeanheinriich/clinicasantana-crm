@@ -13,6 +13,7 @@ import {
   Plug,
   UserCog,
   Megaphone,
+  ShoppingBag,
   LogOut,
 } from "lucide-react"
 import type { PapelUsuario } from "@/lib/enums"
@@ -36,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard",              label: "Dashboard",                 icon: LayoutDashboard, modulo: "dashboard"   },
   { href: "/leads",                  label: "Leads",                     icon: Users,           modulo: "leads"       },
   { href: "/consultas",              label: "Consultas",                 icon: Calendar,        modulo: "consultas"   },
+  { href: "/vendas",                 label: "Vendas",                    icon: ShoppingBag,     modulo: "vendas"      },
   { href: "/financeiro/metas",       label: "Metas Financeiras",         icon: TrendingUp,      modulo: "financeiro"  },
   { href: "/indicadores/comercial",  label: "Indicadores Comerciais",    icon: BarChart3,       modulo: "indicadores" },
   { href: "/indicadores/conversao",  label: "Indicadores de Conversão",  icon: ArrowRightLeft,  modulo: "indicadores" },

@@ -4,6 +4,7 @@ export type Modulo =
   | "dashboard"
   | "leads"
   | "consultas"
+  | "vendas"
   | "financeiro"
   | "usuarios"
   | "integracoes"
@@ -17,6 +18,7 @@ const PERMISSOES: Record<PapelUsuario, Record<Modulo, NivelAcesso>> = {
     dashboard: "edit",
     leads: "full",
     consultas: "full",
+    vendas: "full",
     financeiro: "full",
     usuarios: "full",
     integracoes: "full",
@@ -27,6 +29,7 @@ const PERMISSOES: Record<PapelUsuario, Record<Modulo, NivelAcesso>> = {
     dashboard: "edit",
     leads: "full",
     consultas: "full",
+    vendas: "full",
     financeiro: "view",
     usuarios: "none",
     integracoes: "none",
@@ -37,6 +40,7 @@ const PERMISSOES: Record<PapelUsuario, Record<Modulo, NivelAcesso>> = {
     dashboard: "view",
     leads: "full",
     consultas: "view",
+    vendas: "view",
     financeiro: "none",
     usuarios: "none",
     integracoes: "none",
@@ -47,6 +51,7 @@ const PERMISSOES: Record<PapelUsuario, Record<Modulo, NivelAcesso>> = {
     dashboard: "view",
     leads: "none",
     consultas: "none",
+    vendas: "none",
     financeiro: "view",
     usuarios: "none",
     integracoes: "none",
