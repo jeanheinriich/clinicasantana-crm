@@ -25,7 +25,7 @@ import { KpiCard } from "@/components/dashboard/kpi-card"
 import { VendaFormDialog } from "@/components/vendas/venda-form-dialog"
 import { DeleteVendaButton } from "@/components/vendas/delete-venda-button"
 import { PaginationNav } from "@/components/ui/pagination-nav"
-import { ShoppingBag, DollarSign, TrendingDown, Users, RefreshCw } from "lucide-react"
+import { ShoppingBag, DollarSign, TrendingDown, Users } from "lucide-react"
 
 const PAGE_SIZE = 20
 
@@ -96,15 +96,28 @@ export default async function VendasPage({
   const totalPages = Math.ceil(total / PAGE_SIZE)
   const podeEditar = temPermissao(papel, "vendas", "edit")
 
-  const totalValor     = Number(totais._sum.valor ?? 0)
-  const totalCount     = totais._count
-  const ticketMedio    = totalCount > 0 ? totalValor / totalCount : null
+  // Serializar para objetos simples — Prisma retorna Decimal que não pode
+  // ser passado a Client Components no Next.js
+  const vendas = vendasRaw.map((v) => ({
+    id:          v.id,
+    consultaId:  v.consultaId,
+    nomeCliente: v.consulta.nomeCliente,
+    origem:      v.consulta.origem,
+    valor:       Number(v.valor),
+    dataVenda:   v.dataVenda,
+    status:      v.status,
+    observacao:  v.observacao,
+  }))
+
+  const totalValor  = Number(totais._sum.valor ?? 0)
+  const totalCount  = totais._count
+  const ticketMedio = totalCount > 0 ? totalValor / totalCount : null
   const anosDisponiveis = Array.from({ length: 5 }, (_, i) => hoje.getFullYear() - 2 + i)
 
-  const vendasNovos = vendasRaw.filter((v) => v.consulta.origem !== "RECORRENCIA")
-  const vendasRec   = vendasRaw.filter((v) => v.consulta.origem === "RECORRENCIA")
-  const valorNovos  = vendasNovos.reduce((s, v) => s + Number(v.valor), 0)
-  const valorRec    = vendasRec.reduce((s, v) => s + Number(v.valor), 0)
+  const qtdNovos   = vendas.filter((v) => v.origem !== "RECORRENCIA").length
+  const qtdRec     = vendas.filter((v) => v.origem === "RECORRENCIA").length
+  const valorNovos = vendas.filter((v) => v.origem !== "RECORRENCIA").reduce((s, v) => s + v.valor, 0)
+  const valorRec   = vendas.filter((v) => v.origem === "RECORRENCIA").reduce((s, v) => s + v.valor, 0)
 
   return (
     <div className="space-y-6">
@@ -182,7 +195,7 @@ export default async function VendasPage({
         />
         <KpiCard
           title="Novos / Recorrentes"
-          value={`${vendasNovos.length} / ${vendasRec.length}`}
+          value={`${qtdNovos} / ${qtdRec}`}
           subtitle={`${formatCurrency(valorNovos)} / ${formatCurrency(valorRec)}`}
           icon={Users}
           iconBg="bg-violet-50"
@@ -192,22 +205,22 @@ export default async function VendasPage({
 
       {/* Mobile: card list */}
       <div className="md:hidden space-y-3">
-        {vendasRaw.length === 0 && (
+        {vendas.length === 0 && (
           <p className="text-center text-muted-foreground py-8">Nenhuma venda encontrada.</p>
         )}
-        {vendasRaw.map((v) => (
+        {vendas.map((v) => (
           <div key={v.id} className={`rounded-lg border bg-card p-4 space-y-2 ${v.status === "CANCELADA" ? "opacity-60" : ""}`}>
             <div className="flex items-start justify-between gap-2">
-              <span className="font-medium text-sm leading-tight">{v.consulta.nomeCliente}</span>
+              <span className="font-medium text-sm leading-tight">{v.nomeCliente}</span>
               <Badge variant={STATUS_VARIANT[v.status] ?? "secondary"}>
                 {STATUS_LABELS[v.status] ?? v.status}
               </Badge>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline" className="text-xs">
-                {v.consulta.origem === "RECORRENCIA" ? "Recorrente" : "Novo"}
+                {v.origem === "RECORRENCIA" ? "Recorrente" : "Novo"}
               </Badge>
-              <span className="text-sm font-medium">{formatCurrency(Number(v.valor))}</span>
+              <span className="text-sm font-medium">{formatCurrency(v.valor)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">{formatDate(v.dataVenda)}</span>
@@ -215,7 +228,7 @@ export default async function VendasPage({
                 <div className="flex gap-1">
                   <VendaFormDialog
                     consultas={consultas}
-                    venda={{ id: v.id, consultaId: v.consultaId, valor: Number(v.valor), dataVenda: v.dataVenda, status: v.status, observacao: v.observacao }}
+                    venda={{ id: v.id, consultaId: v.consultaId, valor: v.valor, dataVenda: v.dataVenda, status: v.status, observacao: v.observacao }}
                   >
                     <Button variant="ghost" size="sm" className="h-8 px-3">Editar</Button>
                   </VendaFormDialog>
@@ -242,26 +255,26 @@ export default async function VendasPage({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {vendasRaw.length === 0 && (
+            {vendas.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   Nenhuma venda encontrada.
                 </TableCell>
               </TableRow>
             )}
-            {vendasRaw.map((v) => (
+            {vendas.map((v) => (
               <TableRow
                 key={v.id}
                 className={`hover:bg-accent/50 transition-colors ${v.status === "CANCELADA" ? "opacity-60" : ""}`}
               >
-                <TableCell className="font-medium">{v.consulta.nomeCliente}</TableCell>
+                <TableCell className="font-medium">{v.nomeCliente}</TableCell>
                 <TableCell>{formatDate(v.dataVenda)}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className="text-xs">
-                    {v.consulta.origem === "RECORRENCIA" ? "Recorrente" : "Novo"}
+                    {v.origem === "RECORRENCIA" ? "Recorrente" : "Novo"}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right font-medium">{formatCurrency(Number(v.valor))}</TableCell>
+                <TableCell className="text-right font-medium">{formatCurrency(v.valor)}</TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANT[v.status] ?? "secondary"}>
                     {STATUS_LABELS[v.status] ?? v.status}
@@ -275,7 +288,7 @@ export default async function VendasPage({
                     <div className="flex gap-1 justify-end">
                       <VendaFormDialog
                         consultas={consultas}
-                        venda={{ id: v.id, consultaId: v.consultaId, valor: Number(v.valor), dataVenda: v.dataVenda, status: v.status, observacao: v.observacao }}
+                        venda={{ id: v.id, consultaId: v.consultaId, valor: v.valor, dataVenda: v.dataVenda, status: v.status, observacao: v.observacao }}
                       >
                         <Button variant="ghost" size="sm">Editar</Button>
                       </VendaFormDialog>
