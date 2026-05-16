@@ -189,6 +189,8 @@ export default async function DashboardPage({
         leadsFC={conversao.leadsFC}
         consultasAgendadas={consultasAgendadasCount}
         consultasRealizadas={consultasRealizadasCount}
+        agendadasNovas={conversao.agendadasNovas}
+        agendadasRecorrencia={conversao.agendadasRecorrencia}
         novosQtd={novosQtd}
         recorrenciaQtd={recorrenciaQtd}
         realizado={realizado}
