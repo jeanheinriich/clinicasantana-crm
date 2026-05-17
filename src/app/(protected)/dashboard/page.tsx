@@ -5,6 +5,7 @@ import { MonthNav } from "@/components/dashboard/month-nav"
 import { DashboardHero } from "@/components/dashboard/dashboard-hero"
 import { ConsultasCard } from "@/components/dashboard/consultas-card"
 import { AgendamentosCard } from "@/components/dashboard/agendamentos-card"
+import { VendasCard } from "@/components/dashboard/vendas-card"
 import { TicketMedioSection } from "@/components/dashboard/ticket-medio-section"
 import { FunilSection } from "@/components/dashboard/funil-section"
 import { FaturamentoLineChart } from "@/components/dashboard/faturamento-line-chart"
@@ -94,6 +95,10 @@ export default async function DashboardPage({
   const totalVendasRealizado = vendasDoMes.reduce((s, v) => s + Number(v.valor), 0)
   const vendaNovosValor      = vendasDoMes.filter((v) => v.consulta.origem !== "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
   const vendaRecValor        = vendasDoMes.filter((v) => v.consulta.origem === "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
+  const vendasQtd            = vendasDoMes.length
+  const vendasNovosQtd       = vendasDoMes.filter((v) => v.consulta.origem !== "RECORRENCIA").length
+  const vendasRecQtd         = vendasDoMes.filter((v) => v.consulta.origem === "RECORRENCIA").length
+  const ticketMedioVendas    = vendasQtd > 0 ? totalVendasRealizado / vendasQtd : null
 
   const realizado        = Number(consultasAggregate._sum.valor ?? 0) + totalVendasRealizado
   const novosQtd         = indicadorComercial.agendNovosQtd
@@ -167,6 +172,15 @@ export default async function DashboardPage({
             agendadas={consultasAgendadasCount}
           />
           <AgendamentosCard novosQtd={novosQtd} recorrenciaQtd={recorrenciaQtd} />
+          {vendasQtd > 0 && (
+            <VendasCard
+              total={vendasQtd}
+              novosQtd={vendasNovosQtd}
+              recQtd={vendasRecQtd}
+              valorTotal={totalVendasRealizado}
+              ticketMedio={ticketMedioVendas}
+            />
+          )}
         </div>
       </div>
 
