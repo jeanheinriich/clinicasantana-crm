@@ -99,11 +99,16 @@ export async function syncCampanhas(): Promise<{ upserted: number }> {
   const adAccountId = process.env.META_AD_ACCOUNT_ID
   if (!adAccountId) throw new Error("META_AD_ACCOUNT_ID não configurado")
 
+  const now      = new Date()
+  const since    = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`
+  const until    = now.toISOString().split("T")[0]
+  const timeRange = JSON.stringify({ since, until })
+
   const url = new URL(`${META_API_BASE}/${adAccountId}/campaigns`)
   url.searchParams.set("access_token", accessToken)
   url.searchParams.set(
     "fields",
-    "id,name,status,start_time,stop_time,insights.date_preset(maximum){spend,reach,impressions,clicks,actions}"
+    `id,name,status,start_time,stop_time,insights.time_range(${timeRange}){spend,reach,impressions,clicks,actions}`
   )
   url.searchParams.set("limit", "100")
 

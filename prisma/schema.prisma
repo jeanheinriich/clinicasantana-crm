@@ -130,6 +130,7 @@ model Consulta {
   mesPagamento  Int?      @map("mes_pagamento")
   anoPagamento  Int?      @map("ano_pagamento")
   observacoes   String?
+  criadoEm     DateTime  @default(now()) @map("criado_em")
 
   leadId String? @map("lead_id")
   lead   Lead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
@@ -139,6 +140,7 @@ model Consulta {
   @@index([mesPagamento, anoPagamento])
   @@index([status])
   @@index([origem])
+  @@index([criadoEm])
   @@map("consultas")
 }
 

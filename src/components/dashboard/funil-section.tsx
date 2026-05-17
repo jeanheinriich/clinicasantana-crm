@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/utils"
 interface FunilSectionProps {
   totalLeads: number
   seguidores: number
+  agendNovasCriadas: number
   consultasAgendadas: number
   consultasRealizadas: number
   agendadasNovas: number
@@ -33,6 +34,7 @@ function metaProgressColor(pct: number): string {
 export function FunilSection({
   totalLeads,
   seguidores,
+  agendNovasCriadas,
   consultasAgendadas,
   consultasRealizadas,
   agendadasNovas,
@@ -47,7 +49,7 @@ export function FunilSection({
   cplGeral,
 }: FunilSectionProps) {
   const taxaLeadsSeg      = seguidores > 0 ? (totalLeads / seguidores) * 100 : 0
-  const taxaConvComercial = totalLeads > 0 ? (agendadasNovas / totalLeads) * 100 : 0
+  const taxaConvComercial = totalLeads > 0 ? (agendNovasCriadas / totalLeads) * 100 : 0
   const taxaConvLeads     = totalLeads > 0 ? (consultasAgendadas / totalLeads) * 100 : 0
   const taxaRealizacao    = consultasAgendadas > 0 ? (consultasRealizadas / consultasAgendadas) * 100 : 0
   const ticketMedio       = totalQtd > 0 ? realizado / totalQtd : 0
@@ -97,7 +99,7 @@ export function FunilSection({
             <p className="text-3xl font-bold mt-2">{totalLeads}</p>
             <p className="text-xs text-muted-foreground mt-0.5">leads</p>
             <div className="border-t mt-3 mb-2" />
-            <p className="text-xs text-muted-foreground">{agendadasNovas} agendamentos novos</p>
+            <p className="text-xs text-muted-foreground">{agendNovasCriadas} agendamentos novos</p>
             {totalLeads > 0 && (
               <p
                 className="text-xs font-semibold mt-1"
