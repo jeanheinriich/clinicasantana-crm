@@ -23,10 +23,13 @@ export async function calcularIndicadoresConversao(mes: number, ano: number) {
   )
   const totalLeads           = leadsPorCanal.reduce((acc, l) => acc + l._count.canal, 0)
   const naoCancel            = consultas.filter((c) => c.status !== "CANCELADA")
+  const realizadas           = naoCancel.filter((c) => c.status === "REALIZADA")
   const consultasAgendadas   = naoCancel.length
-  const consultasRealizadas  = naoCancel.filter((c) => c.status === "REALIZADA").length
+  const consultasRealizadas  = realizadas.length
   const agendadasNovas       = naoCancel.filter((c) => c.origem !== "RECORRENCIA").length
   const agendadasRecorrencia = naoCancel.filter((c) => c.origem === "RECORRENCIA").length
+  const realizadasNovas       = realizadas.filter((c) => c.origem !== "RECORRENCIA").length
+  const realizadasRecorrencia = realizadas.filter((c) => c.origem === "RECORRENCIA").length
   const pendentes            = consultasAgendadas - consultasRealizadas
 
   return {
@@ -42,6 +45,8 @@ export async function calcularIndicadoresConversao(mes: number, ano: number) {
     consultasRealizadas,
     agendadasNovas,
     agendadasRecorrencia,
+    realizadasNovas,
+    realizadasRecorrencia,
     pendentes,
   }
 }

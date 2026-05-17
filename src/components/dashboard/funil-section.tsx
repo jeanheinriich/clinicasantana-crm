@@ -12,6 +12,8 @@ interface FunilSectionProps {
   consultasRealizadas: number
   agendadasNovas: number
   agendadasRecorrencia: number
+  realizadasNovas: number
+  realizadasRecorrencia: number
   novosQtd: number
   recorrenciaQtd: number
   realizado: number
@@ -41,6 +43,8 @@ export function FunilSection({
   consultasRealizadas,
   agendadasNovas,
   agendadasRecorrencia,
+  realizadasNovas,
+  realizadasRecorrencia,
   novosQtd,
   recorrenciaQtd,
   realizado,
@@ -128,7 +132,7 @@ export function FunilSection({
             <p className="text-3xl font-bold mt-2">{consultasRealizadas}</p>
             <p className="text-xs text-muted-foreground mt-0.5">consultas no mês</p>
             <p className="text-xs text-muted-foreground mt-2">
-              {novosQtd} novos | {recorrenciaQtd} recorrentes
+              {realizadasNovas} novos | {realizadasRecorrencia} recorrentes
             </p>
             {consultasAgendadas > 0 && (
               <p
