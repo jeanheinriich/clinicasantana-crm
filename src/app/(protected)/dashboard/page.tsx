@@ -172,7 +172,7 @@ export default async function DashboardPage({
               realizadas={consultasRealizadasCount}
               agendadas={consultasAgendadasCount}
             />
-            <AgendamentosCard novosQtd={novosQtd} recorrenciaQtd={recorrenciaQtd} />
+            <AgendamentosCard novosQtd={conversao.agendadasNovas} recorrenciaQtd={conversao.agendadasRecorrencia} />
           </div>
           {vendasQtd > 0 && (
             <VendasCard
