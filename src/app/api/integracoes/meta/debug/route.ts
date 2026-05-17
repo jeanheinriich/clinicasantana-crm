@@ -10,15 +10,28 @@ export async function GET() {
   const config = await prisma.integracaoConfig.findUnique({ where: { servico: "META" } })
   if (!config?.accessToken) return Response.json({ erro: "Token não configurado" })
 
-  const url = new URL("https://graph.facebook.com/v21.0/me/accounts")
-  url.searchParams.set("fields", "id,name,instagram_business_account")
-  url.searchParams.set("access_token", config.accessToken)
+  const base = "https://graph.facebook.com/v21.0"
+  const token = config.accessToken
 
-  const res  = await fetch(url.toString())
-  const data = await res.json()
+  const [permRes, accountsRes] = await Promise.all([
+    fetch(`${base}/me/permissions?access_token=${token}`),
+    fetch(`${base}/me/accounts?fields=id,name,instagram_business_account&access_token=${token}`),
+  ])
+
+  const [permissions, accounts] = await Promise.all([permRes.json(), accountsRes.json()])
+
+  // Tenta buscar instagram_business_account de cada página individualmente
+  const pages = (accounts.data ?? []) as Array<{ id: string; name: string }>
+  const pagesDetail = await Promise.all(
+    pages.map(async (p) => {
+      const r = await fetch(`${base}/${p.id}?fields=instagram_business_account&access_token=${token}`)
+      return { pageId: p.id, name: p.name, detail: await r.json() }
+    })
+  )
 
   return Response.json({
-    extraData:     config.extraData,
-    accountsRaw:   data,
+    extraData:   config.extraData,
+    permissions: permissions?.data,
+    pagesDetail,
   })
 }
