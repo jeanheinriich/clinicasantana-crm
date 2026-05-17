@@ -90,6 +90,39 @@ export async function exchangeCodeForToken(
 
   // Troca por long-lived token (60 dias)
   await refreshMetaToken(shortData.access_token)
+
+  // Descobrir pageId e igUserId e salvar em extraData
+  const longToken = await getAccessToken()
+  if (longToken) await discoverAndSaveAccountIds(longToken)
+}
+
+async function discoverAndSaveAccountIds(accessToken: string): Promise<void> {
+  const url = new URL(`${META_API_BASE}/me/accounts`)
+  url.searchParams.set("fields", "id,name,instagram_business_account")
+  url.searchParams.set("access_token", accessToken)
+
+  const res = await fetch(url.toString())
+  if (!res.ok) {
+    console.warn("[Meta] Não foi possível descobrir pageId:", await res.text())
+    return
+  }
+
+  const data = await res.json()
+  const page = (data.data as Array<{ id: string; instagram_business_account?: { id: string } }>)?.[0]
+  if (!page) {
+    console.warn("[Meta] Nenhuma página vinculada encontrada")
+    return
+  }
+
+  const pageId    = String(page.id)
+  const igUserId  = page.instagram_business_account?.id ?? null
+
+  console.log(`[Meta] pageId=${pageId} igUserId=${igUserId ?? "não encontrado"}`)
+
+  await prisma.integracaoConfig.update({
+    where: { servico: "META" },
+    data:  { extraData: JSON.stringify({ pageId, igUserId }) },
+  })
 }
 
 export async function syncCampanhas(): Promise<{ upserted: number }> {
