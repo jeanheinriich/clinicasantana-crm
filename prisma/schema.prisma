@@ -242,6 +242,19 @@ model MetaCampanha {
   @@map("meta_campanhas")
 }
 
+// ─── Meta Page Insights ──────────────────────────────────────────────────────
+
+model MetaInsightsMensais {
+  id             String   @id @default(cuid())
+  mes            Int
+  ano            Int
+  seguidores     Int      @default(0)
+  sincronizadoEm DateTime @default(now()) @map("sincronizado_em")
+
+  @@unique([mes, ano], name: "mes_ano")
+  @@map("meta_insights_mensais")
+}
+
 // ─── Config de Integrações ────────────────────────────────────────────────────
 
 model IntegracaoConfig {

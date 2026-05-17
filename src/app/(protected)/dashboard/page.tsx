@@ -57,7 +57,7 @@ export default async function DashboardPage({
     vendasDoMes,
     vendasNaoCanceladas,
     realizadosVendasPorMes,
-    seguidoresAggregate,
+    metaInsightsMes,
   ] = await Promise.all([
     prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
     prisma.consulta.aggregate({
@@ -96,16 +96,7 @@ export default async function DashboardPage({
       where: { ano, status: "REALIZADA" },
       _sum: { valor: true },
     }),
-    prisma.metaCampanha.aggregate({
-      where: {
-        dataInicio: { lte: new Date(ano, mes, 0, 23, 59, 59, 999) },
-        OR: [
-          { dataFim: { gte: new Date(ano, mes - 1, 1) } },
-          { dataFim: null },
-        ],
-      },
-      _sum: { seguidores: true },
-    }),
+    prisma.metaInsightsMensais.findUnique({ where: { mes_ano: { mes, ano } } }),
   ])
 
   const totalVendasRealizado  = vendasDoMes.reduce((s, v) => s + Number(v.valor), 0)
@@ -120,7 +111,7 @@ export default async function DashboardPage({
   const vendaNovosValorTicket = vendasNaoCanceladas.filter((v) => v.consulta.origem !== "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
   const vendaRecValorTicket   = vendasNaoCanceladas.filter((v) => v.consulta.origem === "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
 
-  const seguidoresDoMes = Number(seguidoresAggregate._sum.seguidores ?? 0)
+  const seguidoresDoMes = metaInsightsMes?.seguidores ?? 0
 
   const realizado        = Number(consultasAggregate._sum.valor ?? 0) + totalVendasRealizado
   const novosQtd         = indicadorComercial.agendNovosQtd

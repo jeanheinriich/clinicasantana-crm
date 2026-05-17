@@ -1,4 +1,4 @@
-import { syncCampanhas } from "@/lib/meta-api"
+import { syncCampanhas, syncSeguidoresMensais } from "@/lib/meta-api"
 
 export async function GET(req: Request) {
   const cronSecret = req.headers.get("authorization")
@@ -7,8 +7,17 @@ export async function GET(req: Request) {
   }
 
   try {
-    const result = await syncCampanhas()
-    return Response.json({ sucesso: true, ...result })
+    const hoje = new Date()
+    const [campanhas, insights] = await Promise.allSettled([
+      syncCampanhas(),
+      syncSeguidoresMensais(hoje.getMonth() + 1, hoje.getFullYear()),
+    ])
+
+    return Response.json({
+      sucesso:    true,
+      campanhas:  campanhas.status === "fulfilled" ? campanhas.value : { erro: (campanhas.reason as Error).message },
+      seguidores: insights.status  === "fulfilled" ? insights.value  : { erro: (insights.reason  as Error).message },
+    })
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Erro no cron Meta sync"
     console.error("[cron/meta-sync]", msg)

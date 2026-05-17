@@ -125,6 +125,66 @@ async function discoverAndSaveAccountIds(accessToken: string): Promise<void> {
   })
 }
 
+export async function syncSeguidoresMensais(
+  mes: number,
+  ano: number
+): Promise<{ seguidores: number }> {
+  const config = await prisma.integracaoConfig.findUnique({ where: { servico: "META" } })
+  if (!config?.accessToken) throw new Error("Token Meta não configurado")
+
+  const extraData = config.extraData ? (JSON.parse(config.extraData) as { igUserId?: string }) : {}
+  const igUserId  = extraData.igUserId
+  if (!igUserId) throw new Error("igUserId não configurado — reconecte o Meta para atualizar as permissões")
+
+  const hoje      = new Date()
+  const since     = `${ano}-${String(mes).padStart(2, "0")}-01`
+  const untilDate = mes === hoje.getMonth() + 1 && ano === hoje.getFullYear()
+    ? hoje
+    : new Date(ano, mes, 0) // último dia do mês
+  const until = untilDate.toISOString().split("T")[0]
+
+  const url = new URL(`${META_API_BASE}/${igUserId}/insights`)
+  url.searchParams.set("metric", "follower_count")
+  url.searchParams.set("period", "day")
+  url.searchParams.set("since", since)
+  url.searchParams.set("until", until)
+  url.searchParams.set("access_token", config.accessToken)
+
+  const res  = await fetch(url.toString())
+  const data = await res.json()
+
+  type InsightPoint = { value: number; end_time: string }
+  const pontosRaw: InsightPoint[] = (data?.data as Array<{ values: InsightPoint[] }>)?.[0]?.values ?? []
+
+  // Log para diagnóstico — confirmar que end_time[0] corresponde ao since
+  console.log(
+    `[syncSeguidoresMensais] ${mes}/${ano} — ${pontosRaw.length} pontos. Primeiros:`,
+    JSON.stringify(pontosRaw.slice(0, 3))
+  )
+
+  // Filtrar pontos com end_time >= since (API pode incluir baseline anterior)
+  const sinceTs = new Date(since).getTime()
+  const pontos  = pontosRaw.filter((p) => new Date(p.end_time).getTime() >= sinceTs)
+
+  if (pontos.length < 2) {
+    console.log(`[syncSeguidoresMensais] Pontos insuficientes após filtro: ${pontos.length}`)
+    return { seguidores: 0 }
+  }
+
+  const primeiro  = pontos[0].value
+  const ultimo    = pontos[pontos.length - 1].value
+  const seguidores = Math.max(0, ultimo - primeiro)
+  console.log(`[syncSeguidoresMensais] Delta: ${ultimo} - ${primeiro} = ${seguidores}`)
+
+  await prisma.metaInsightsMensais.upsert({
+    where:  { mes_ano: { mes, ano } },
+    create: { mes, ano, seguidores, sincronizadoEm: new Date() },
+    update: { seguidores, sincronizadoEm: new Date() },
+  })
+
+  return { seguidores }
+}
+
 export async function syncCampanhas(): Promise<{ upserted: number }> {
   const accessToken = await getAccessToken()
   if (!accessToken) throw new Error("Token Meta não configurado")
