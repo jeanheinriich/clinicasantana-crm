@@ -24,7 +24,7 @@ export async function calcularIndicadoresConversao(mes: number, ano: number) {
   const totalLeads           = leadsPorCanal.reduce((acc, l) => acc + l._count.canal, 0)
   const naoCancel            = consultas.filter((c) => c.status !== "CANCELADA")
   const consultasAgendadas   = naoCancel.length
-  const consultasRealizadas  = naoCancel.filter((c) => c.dataPagamento !== null).length
+  const consultasRealizadas  = naoCancel.filter((c) => c.status === "REALIZADA").length
   const agendadasNovas       = naoCancel.filter((c) => c.origem !== "RECORRENCIA").length
   const agendadasRecorrencia = naoCancel.filter((c) => c.origem === "RECORRENCIA").length
   const pendentes            = consultasAgendadas - consultasRealizadas
@@ -71,7 +71,7 @@ export async function calcularHistoricoConversao(ano: number) {
     return {
       mes,
       totalLeads:          mesLeads.length,
-      consultasRealizadas: mesConsultas.filter((c) => c.dataPagamento !== null).length,
+      consultasRealizadas: mesConsultas.filter((c) => c.status === "REALIZADA").length,
     }
   }).filter((v): v is NonNullable<typeof v> => v !== null)
 }
