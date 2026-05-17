@@ -178,6 +178,8 @@ export default async function DashboardPage({
         ticketNovosQtd={indicadorComercial.ticketNovosQtd}
         ticketRecValor={indicadorComercial.ticketRecValor + vendaRecValor}
         ticketRecQtd={indicadorComercial.ticketRecQtd}
+        mes={mes}
+        ano={ano}
       />
 
       {/* Row 3: Funil de Conversão */}

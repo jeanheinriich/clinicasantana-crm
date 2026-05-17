@@ -8,6 +8,8 @@ interface TicketMedioSectionProps {
   ticketNovosQtd: number
   ticketRecValor: number
   ticketRecQtd: number
+  mes: number
+  ano: number
 }
 
 export function TicketMedioSection({
@@ -17,10 +19,19 @@ export function TicketMedioSection({
   ticketNovosQtd,
   ticketRecValor,
   ticketRecQtd,
+  mes,
+  ano,
 }: TicketMedioSectionProps) {
   const ticketGeral = totalQtd > 0 ? realizado / totalQtd : 0
   const ticketNovos = ticketNovosQtd > 0 ? ticketNovosValor / ticketNovosQtd : 0
   const ticketRec   = ticketRecQtd > 0 ? ticketRecValor / ticketRecQtd : 0
+
+  const hoje = new Date()
+  const isMesAtual = mes === hoje.getMonth() + 1 && ano === hoje.getFullYear()
+  const diasReferencia = isMesAtual
+    ? hoje.getDate()
+    : new Date(ano, mes, 0).getDate()
+  const ticketDiario = diasReferencia > 0 ? realizado / diasReferencia : 0
 
   const cards = [
     {
@@ -38,6 +49,11 @@ export function TicketMedioSection({
       valor: ticketRec > 0 ? formatCurrency(ticketRec) : "—",
       sub: `${ticketRecQtd} recorrentes`,
     },
+    {
+      label: "Diário",
+      valor: ticketDiario > 0 ? formatCurrency(ticketDiario) : "—",
+      sub: isMesAtual ? `${diasReferencia} dias decorridos` : `${diasReferencia} dias no mês`,
+    },
   ]
 
   return (
@@ -45,7 +61,7 @@ export function TicketMedioSection({
       <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
         Ticket Médio
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card) => (
           <Card key={card.label}>
             <CardContent className="pt-5 px-5 pb-5">
