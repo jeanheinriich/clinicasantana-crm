@@ -22,7 +22,9 @@ export function VendasCard({ total, novosQtd, recQtd, valorTotal, ticketMedio }:
         <p className="text-sm text-muted-foreground mt-1">
           {novosQtd} novos | {recQtd} recorrentes
         </p>
-        <p className="text-sm font-medium mt-2">{formatCurrency(valorTotal)}</p>
+        <p className="text-xs font-semibold mt-2" style={{ color: "var(--meta-batida)" }}>
+          {formatCurrency(valorTotal)}
+        </p>
         {ticketMedio != null && (
           <p className="text-xs text-muted-foreground mt-0.5">
             Ticket: {formatCurrency(ticketMedio)}

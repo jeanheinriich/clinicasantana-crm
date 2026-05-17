@@ -167,11 +167,13 @@ export default async function DashboardPage({
           )}
         </div>
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <ConsultasCard
-            realizadas={consultasRealizadasCount}
-            agendadas={consultasAgendadasCount}
-          />
-          <AgendamentosCard novosQtd={novosQtd} recorrenciaQtd={recorrenciaQtd} />
+          <div className="grid grid-cols-2 gap-4">
+            <ConsultasCard
+              realizadas={consultasRealizadasCount}
+              agendadas={consultasAgendadasCount}
+            />
+            <AgendamentosCard novosQtd={novosQtd} recorrenciaQtd={recorrenciaQtd} />
+          </div>
           {vendasQtd > 0 && (
             <VendasCard
               total={vendasQtd}
