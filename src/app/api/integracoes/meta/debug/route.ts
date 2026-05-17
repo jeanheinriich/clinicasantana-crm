@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   const session = await auth()
-  if (!session?.user || session.user.papel !== "ADMIN") {
+  if (!session?.user) {
     return Response.json({ erro: "Sem permissão" }, { status: 403 })
   }
 
