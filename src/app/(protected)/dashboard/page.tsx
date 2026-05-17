@@ -58,7 +58,6 @@ export default async function DashboardPage({
     vendasNaoCanceladas,
     realizadosVendasPorMes,
     seguidoresAggregate,
-    agendNovasCriadasCount,
   ] = await Promise.all([
     prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
     prisma.consulta.aggregate({
@@ -106,16 +105,6 @@ export default async function DashboardPage({
         ],
       },
       _sum: { seguidores: true },
-    }),
-    prisma.consulta.count({
-      where: {
-        criadoEm: {
-          gte: new Date(ano, mes - 1, 1),
-          lt:  new Date(ano, mes,     1),
-        },
-        origem: { not: "RECORRENCIA" },
-        status: { not: "CANCELADA" },
-      },
     }),
   ])
 
@@ -235,7 +224,7 @@ export default async function DashboardPage({
       <FunilSection
         totalLeads={conversao.totalLeads}
         seguidores={seguidoresDoMes}
-        agendNovasCriadas={agendNovasCriadasCount}
+        agendNovasCriadas={novosQtd}
         consultasAgendadas={consultasAgendadasCount}
         consultasRealizadas={consultasRealizadasCount}
         agendadasNovas={conversao.agendadasNovas}
