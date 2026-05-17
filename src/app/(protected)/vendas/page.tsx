@@ -72,7 +72,7 @@ export default async function VendasPage({
     ...(params.status && params.status !== "todos" && { status: params.status }),
   }
 
-  const [vendasRaw, total, totais, consultas] = await Promise.all([
+  const [vendasRaw, total, totaisNaoCanceladas, totalRealizadasCount, consultas] = await Promise.all([
     prisma.venda.findMany({
       where,
       orderBy: { dataVenda: "desc" },
@@ -82,10 +82,10 @@ export default async function VendasPage({
     }),
     prisma.venda.count({ where }),
     prisma.venda.aggregate({
-      where: { mes, ano },
+      where: { mes, ano, status: { not: "CANCELADA" } },
       _sum: { valor: true },
-      _count: true,
     }),
+    prisma.venda.count({ where: { mes, ano, status: "REALIZADA" } }),
     prisma.consulta.findMany({
       orderBy: { dataConsulta: "desc" },
       take: 300,
@@ -109,9 +109,8 @@ export default async function VendasPage({
     observacao:  v.observacao,
   }))
 
-  const totalValor  = Number(totais._sum.valor ?? 0)
-  const totalCount  = totais._count
-  const ticketMedio = totalCount > 0 ? totalValor / totalCount : null
+  const totalValor  = Number(totaisNaoCanceladas._sum.valor ?? 0)
+  const ticketMedio = totalRealizadasCount > 0 ? totalValor / totalRealizadasCount : null
   const anosDisponiveis = Array.from({ length: 5 }, (_, i) => hoje.getFullYear() - 2 + i)
 
   const qtdNovos   = vendas.filter((v) => v.origem !== "RECORRENCIA").length
@@ -174,7 +173,7 @@ export default async function VendasPage({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <KpiCard
           title="Total de Vendas"
-          value={String(totalCount)}
+          value={String(total)}
           icon={ShoppingBag}
           iconBg="bg-amber-50"
           iconColor="text-amber-600"

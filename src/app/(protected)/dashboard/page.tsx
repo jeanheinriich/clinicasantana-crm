@@ -55,6 +55,7 @@ export default async function DashboardPage({
     realizadosConsultasPorMes,
     leadsPorCanalRaw,
     vendasDoMes,
+    vendasNaoCanceladas,
     realizadosVendasPorMes,
   ] = await Promise.all([
     prisma.metaFinanceira.findUnique({ where: { mes_ano: { mes, ano } } }),
@@ -85,6 +86,10 @@ export default async function DashboardPage({
       where: { mes, ano, status: "REALIZADA" },
       include: { consulta: { select: { origem: true } } },
     }),
+    prisma.venda.findMany({
+      where: { mes, ano, status: { not: "CANCELADA" } },
+      include: { consulta: { select: { origem: true } } },
+    }),
     prisma.venda.groupBy({
       by: ["mes"],
       where: { ano, status: "REALIZADA" },
@@ -92,13 +97,17 @@ export default async function DashboardPage({
     }),
   ])
 
-  const totalVendasRealizado = vendasDoMes.reduce((s, v) => s + Number(v.valor), 0)
-  const vendaNovosValor      = vendasDoMes.filter((v) => v.consulta.origem !== "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
-  const vendaRecValor        = vendasDoMes.filter((v) => v.consulta.origem === "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
-  const vendasQtd            = vendasDoMes.length
-  const vendasNovosQtd       = vendasDoMes.filter((v) => v.consulta.origem !== "RECORRENCIA").length
-  const vendasRecQtd         = vendasDoMes.filter((v) => v.consulta.origem === "RECORRENCIA").length
-  const ticketMedioVendas    = vendasQtd > 0 ? totalVendasRealizado / vendasQtd : null
+  const totalVendasRealizado  = vendasDoMes.reduce((s, v) => s + Number(v.valor), 0)
+  const vendaNovosValor       = vendasDoMes.filter((v) => v.consulta.origem !== "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
+  const vendaRecValor         = vendasDoMes.filter((v) => v.consulta.origem === "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
+  const vendasQtd             = vendasDoMes.length
+  const vendasNovosQtd        = vendasDoMes.filter((v) => v.consulta.origem !== "RECORRENCIA").length
+  const vendasRecQtd          = vendasDoMes.filter((v) => v.consulta.origem === "RECORRENCIA").length
+  const ticketMedioVendas     = vendasQtd > 0 ? totalVendasRealizado / vendasQtd : null
+
+  // Numeradores de ticket para vendas: todos não-cancelados (PENDENTE + REALIZADA)
+  const vendaNovosValorTicket = vendasNaoCanceladas.filter((v) => v.consulta.origem !== "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
+  const vendaRecValorTicket   = vendasNaoCanceladas.filter((v) => v.consulta.origem === "RECORRENCIA").reduce((s, v) => s + Number(v.valor), 0)
 
   const realizado        = Number(consultasAggregate._sum.valor ?? 0) + totalVendasRealizado
   const novosQtd         = indicadorComercial.agendNovosQtd
@@ -190,9 +199,9 @@ export default async function DashboardPage({
       <TicketMedioSection
         realizado={realizado}
         totalQtd={indicadorComercial.totalQtd}
-        ticketNovosValor={indicadorComercial.ticketNovosValor + vendaNovosValor}
+        ticketNovosValor={indicadorComercial.ticketNovosValor + vendaNovosValorTicket}
         ticketNovosQtd={indicadorComercial.ticketNovosQtd}
-        ticketRecValor={indicadorComercial.ticketRecValor + vendaRecValor}
+        ticketRecValor={indicadorComercial.ticketRecValor + vendaRecValorTicket}
         ticketRecQtd={indicadorComercial.ticketRecQtd}
         mes={mes}
         ano={ano}
